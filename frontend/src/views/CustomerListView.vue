@@ -12,9 +12,11 @@ import {
   type IGetRowsParams,
   type RowDoubleClickedEvent,
 } from 'ag-grid-community'
-import { listCustomers, type CustomerListItem } from '@/api/customer'
+import { deleteCustomer, listCustomers, type CustomerListItem } from '@/api/customer'
+import { ApiError } from '@/api/client'
 import CustomerRowActions from '@/components/customer/CustomerRowActions.vue'
 import CustomerModifyPopup from '@/components/customer/CustomerModifyPopup.vue'
+import CustomerRegisterPopup from '@/components/customer/CustomerRegisterPopup.vue'
 
 ModuleRegistry.registerModules([AllCommunityModule])
 
@@ -47,8 +49,19 @@ const edit = (name: string) => {
   showModify.value = true
 }
 
-const remove = (_name: string) => {
-  // 삭제는 이후 단계에서 연결
+const remove = async (name: string) => {
+  if (!window.confirm('거래처 정보를 삭제하시겠습니까?')) return
+  try {
+    await deleteCustomer(name)
+    snackbarColor.value = 'success'
+    snackbarText.value = '삭제되었습니다.'
+    snackbar.value = true
+    refresh()
+  } catch (e) {
+    snackbarColor.value = 'error'
+    snackbarText.value = e instanceof ApiError ? e.message : '삭제에 실패했습니다.'
+    snackbar.value = true
+  }
 }
 
 const onRowDoubleClicked = (event: RowDoubleClickedEvent<CustomerListItem>) => {
@@ -101,8 +114,9 @@ watch(search, () => {
   debounceHandle = window.setTimeout(refresh, 400)
 })
 
+const showRegister = ref(false)
 const insert = () => {
-  // 신규입력 팝업은 이후 단계에서 연결
+  showRegister.value = true
 }
 </script>
 
@@ -153,6 +167,7 @@ const insert = () => {
   />
 
   <CustomerModifyPopup v-model="showModify" :name="selectedName" @saved="onSaved" @error="onError" />
+  <CustomerRegisterPopup v-model="showRegister" @saved="onSaved" @error="onError" />
 
   <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="3000">
     {{ snackbarText }}

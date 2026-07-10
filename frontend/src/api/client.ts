@@ -76,3 +76,25 @@ export async function apiPut<T>(path: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   })
 }
+
+export async function apiPost<T>(path: string, body: unknown): Promise<T> {
+  const token = await getCsrfToken()
+  return request<T>(path, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { 'X-Frappe-CSRF-Token': token } : {}),
+    },
+    body: JSON.stringify(body),
+  })
+}
+
+export async function apiDelete<T>(path: string): Promise<T> {
+  const token = await getCsrfToken()
+  return request<T>(path, {
+    method: 'DELETE',
+    headers: {
+      ...(token ? { 'X-Frappe-CSRF-Token': token } : {}),
+    },
+  })
+}

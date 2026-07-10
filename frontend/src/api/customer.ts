@@ -1,4 +1,4 @@
-import { apiGet, apiPut } from './client'
+import { apiDelete, apiGet, apiPost, apiPut } from './client'
 
 export interface CustomerDoc {
   name: string
@@ -178,4 +178,26 @@ export function formToUpdatePayload(form: CustomerFormState): CustomerUpdatePayl
 export async function updateCustomer(name: string, patch: CustomerUpdatePayload): Promise<CustomerDoc> {
   const res = await apiPut<DocResponse<CustomerDoc>>(`/resource/Customer/${encodeURIComponent(name)}`, patch)
   return res.data
+}
+
+export interface CustomerCreatePayload extends CustomerUpdatePayload {
+  customer_name: string
+  customer_type: string
+}
+
+export function formToCreatePayload(form: CustomerFormState): CustomerCreatePayload {
+  return {
+    customer_name: form.customer_name,
+    customer_type: 'Company',
+    ...formToUpdatePayload(form),
+  }
+}
+
+export async function createCustomer(patch: CustomerCreatePayload): Promise<CustomerDoc> {
+  const res = await apiPost<DocResponse<CustomerDoc>>('/resource/Customer', patch)
+  return res.data
+}
+
+export async function deleteCustomer(name: string): Promise<void> {
+  await apiDelete(`/resource/Customer/${encodeURIComponent(name)}`)
 }
