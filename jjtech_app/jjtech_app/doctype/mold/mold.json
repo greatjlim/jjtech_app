@@ -1,0 +1,138 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "mold_model",
+  "naming_series",
+  "mold_number",
+  "manufacturer",
+  "b_diameter",
+  "extrusion_rate",
+  "hole_count",
+  "diameter",
+  "dimension",
+  "current_status",
+  "production_reason",
+  "production_receipt_date",
+  "disposal_date",
+  "disposal_reason"
+ ],
+ "fields": [
+  {
+   "fieldname": "mold_model",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "형번",
+   "options": "Mold Model",
+   "reqd": 1
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "MOLD-.YYYY.-.#####"
+  },
+  {
+   "fieldname": "mold_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "금형번호",
+   "reqd": 1
+  },
+  {
+   "fieldname": "manufacturer",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "제작업체"
+  },
+  {
+   "fieldname": "b_diameter",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "B구경"
+  },
+  {
+   "fieldname": "extrusion_rate",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "압출비"
+  },
+  {
+   "fieldname": "hole_count",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Hole수"
+  },
+  {
+   "fieldname": "diameter",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "다이"
+  },
+  {
+   "fieldname": "dimension",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "칫수"
+  },
+  {
+   "fieldname": "current_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "현재상태",
+   "options": "제작중\n사용중\n보관중\n폐기"
+  },
+  {
+   "fieldname": "production_reason",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "제작사유",
+   "options": "신규제작\n마모교체\n손상교체\n사양변경"
+  },
+  {
+   "fieldname": "production_receipt_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "제작처입고일"
+  },
+  {
+   "fieldname": "disposal_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "폐기일"
+  },
+  {
+   "fieldname": "disposal_reason",
+   "fieldtype": "Data",
+   "label": "폐기사유"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "module": "Jjtech App",
+ "name": "Mold",
+ "naming_rule": "By \"Naming Series\" field",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "mold_number",
+ "track_changes": 1
+}
