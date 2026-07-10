@@ -43,6 +43,11 @@ const router = createRouter({
           name: 'customers',
           component: () => import('@/views/CustomerListView.vue'),
         },
+        {
+          path: 'molds',
+          name: 'molds',
+          component: () => import('@/views/MoldManagementView.vue'),
+        },
       ],
     },
   ],
