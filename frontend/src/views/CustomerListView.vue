@@ -25,6 +25,23 @@ const gridApi = shallowRef<GridApi | null>(null)
 const showModify = ref(false)
 const selectedName = ref('')
 
+const snackbar = ref(false)
+const snackbarText = ref('')
+const snackbarColor = ref<'success' | 'error'>('success')
+
+const onSaved = () => {
+  snackbarColor.value = 'success'
+  snackbarText.value = '저장되었습니다.'
+  snackbar.value = true
+  refresh()
+}
+
+const onError = (message: string) => {
+  snackbarColor.value = 'error'
+  snackbarText.value = message
+  snackbar.value = true
+}
+
 const edit = (name: string) => {
   selectedName.value = name
   showModify.value = true
@@ -135,7 +152,11 @@ const insert = () => {
     @row-double-clicked="onRowDoubleClicked"
   />
 
-  <CustomerModifyPopup v-model="showModify" :name="selectedName" />
+  <CustomerModifyPopup v-model="showModify" :name="selectedName" @saved="onSaved" @error="onError" />
+
+  <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="3000">
+    {{ snackbarText }}
+  </v-snackbar>
 </template>
 
 <style scoped>

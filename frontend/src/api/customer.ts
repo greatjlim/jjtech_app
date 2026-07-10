@@ -1,4 +1,4 @@
-import { apiGet } from './client'
+import { apiGet, apiPut } from './client'
 
 export interface CustomerDoc {
   name: string
@@ -148,5 +148,34 @@ interface DocResponse<T> {
 
 export async function getCustomer(name: string): Promise<CustomerDoc> {
   const res = await apiGet<DocResponse<CustomerDoc>>(`/resource/Customer/${encodeURIComponent(name)}`)
+  return res.data
+}
+
+export type CustomerUpdatePayload = Partial<Omit<CustomerDoc, 'name' | 'customer_name'>>
+
+export function formToUpdatePayload(form: CustomerFormState): CustomerUpdatePayload {
+  return {
+    custom_company_shorten_name: form.custom_company_shorten_name,
+    tax_id: form.tax_id,
+    custom_phone_number: form.custom_phone_number,
+    custom_mobile_phone_number: form.custom_mobile_phone_number,
+    custom_email: form.custom_email,
+    custom_address_main: form.custom_address_main,
+    custom_address_detail: form.custom_address_detail,
+    custom_zip_code: form.custom_zip_code,
+    custom_representative_name: form.custom_representative_name,
+    website: form.website,
+    custom_tax_invoice_name: form.custom_tax_invoice_name,
+    custom_tax_invoice_department: form.custom_tax_invoice_department,
+    custom_tax_invoice_position: form.custom_tax_invoice_position,
+    custom_tax_invoice_mobile: form.custom_tax_invoice_mobile,
+    custom_tax_invoice_email: form.custom_tax_invoice_email,
+    customer_details: form.customer_details,
+    disabled: form.useOrNot === 'N' ? 1 : 0,
+  }
+}
+
+export async function updateCustomer(name: string, patch: CustomerUpdatePayload): Promise<CustomerDoc> {
+  const res = await apiPut<DocResponse<CustomerDoc>>(`/resource/Customer/${encodeURIComponent(name)}`, patch)
   return res.data
 }
