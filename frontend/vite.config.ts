@@ -16,6 +16,11 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
+      // CSRF 토큰은 API 응답이 아니라 desk HTML(frappe.csrf_token = "...";)에 들어있다.
+      '/desk': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
     },
   },
 })
