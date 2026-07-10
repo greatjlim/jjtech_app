@@ -134,7 +134,7 @@ const buildMoldDatasource = (): IDatasource => ({
   rowCount: undefined,
   getRows: async (params: IGetRowsParams) => {
     try {
-      const { items, total } = await listMolds('', params.startRow, params.endRow - params.startRow)
+      const { items, total } = await listMolds(selectedModelNumber.value, params.startRow, params.endRow - params.startRow)
       moldTotalCount.value = total
       const endRow = total <= params.endRow ? total : -1
       params.successCallback(items, endRow)
@@ -148,6 +148,14 @@ const onMoldGridReady = (event: GridReadyEvent) => {
   moldGridApi.value = event.api
   event.api.setGridOption('datasource', buildMoldDatasource())
 }
+
+const refreshMoldGrid = () => {
+  moldGridApi.value?.setGridOption('datasource', buildMoldDatasource())
+}
+
+watch(selectedModelNumber, () => {
+  refreshMoldGrid()
+})
 
 const defaultColDef = { cellClass: ['d-flex', 'align-center'] }
 </script>
