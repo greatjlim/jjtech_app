@@ -32,6 +32,7 @@ const logout = async () => {
       <v-list nav>
         <v-list-item to="/dashboard" prepend-icon="mdi-view-dashboard" title="대시보드" />
         <v-list-item to="/companies" prepend-icon="mdi-domain" title="회사 관리" />
+        <v-list-item to="/customers" prepend-icon="mdi-account-group" title="거래처 관리" />
       </v-list>
     </v-navigation-drawer>
 
