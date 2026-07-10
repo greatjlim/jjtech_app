@@ -10,8 +10,11 @@ import {
   type GridReadyEvent,
   type IDatasource,
   type IGetRowsParams,
+  type RowDoubleClickedEvent,
 } from 'ag-grid-community'
 import { listCustomers, type CustomerListItem } from '@/api/customer'
+import CustomerRowActions from '@/components/customer/CustomerRowActions.vue'
+import CustomerModifyPopup from '@/components/customer/CustomerModifyPopup.vue'
 
 ModuleRegistry.registerModules([AllCommunityModule])
 
@@ -19,12 +22,35 @@ const search = ref('')
 const totalCount = ref<number | undefined>(undefined)
 const gridApi = shallowRef<GridApi | null>(null)
 
+const showModify = ref(false)
+const selectedName = ref('')
+
+const edit = (name: string) => {
+  selectedName.value = name
+  showModify.value = true
+}
+
+const remove = (_name: string) => {
+  // 삭제는 이후 단계에서 연결
+}
+
+const onRowDoubleClicked = (event: RowDoubleClickedEvent<CustomerListItem>) => {
+  if (event.data) edit(event.data.name)
+}
+
 const columnDefs: ColDef<CustomerListItem>[] = [
   { headerName: '거래처명', field: 'customer_name', width: 220 },
   { headerName: '대표자명', field: 'custom_representative_name', width: 140 },
   { headerName: '사업자등록번호', field: 'tax_id', width: 160 },
   { headerName: '전화번호', field: 'custom_phone_number', width: 160 },
   { headerName: '주소', field: 'custom_address_main', flex: 1 },
+  {
+    headerName: '실행',
+    sortable: false,
+    cellRenderer: CustomerRowActions,
+    cellRendererParams: { onEdit: edit, onDelete: remove },
+    width: 100,
+  },
 ]
 
 const defaultColDef = { cellClass: ['d-flex', 'align-center'] }
@@ -106,7 +132,10 @@ const insert = () => {
     style="height: 500px; width: 100%"
     suppress-drag-leave-hides-columns
     @grid-ready="onGridReady"
+    @row-double-clicked="onRowDoubleClicked"
   />
+
+  <CustomerModifyPopup v-model="showModify" :name="selectedName" />
 </template>
 
 <style scoped>
