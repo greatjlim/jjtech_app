@@ -89,6 +89,19 @@ export async function apiPost<T>(path: string, body: unknown): Promise<T> {
   })
 }
 
+export async function uploadFile(file: File): Promise<string> {
+  const token = await getCsrfToken()
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('is_private', '0')
+  const res = await request<{ message: { file_url: string } }>('/method/upload_file', {
+    method: 'POST',
+    headers: token ? { 'X-Frappe-CSRF-Token': token } : {},
+    body: formData,
+  })
+  return res.message.file_url
+}
+
 export async function apiDelete<T>(path: string): Promise<T> {
   const token = await getCsrfToken()
   return request<T>(path, {

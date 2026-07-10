@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue'
 import FormDialog from '@/components/FormDialog.vue'
-import CustomerFormFields from './CustomerFormFields.vue'
-import { customerDocToForm, emptyCustomerForm, formToUpdatePayload, getCustomer, updateCustomer } from '@/api/customer'
+import MoldFormFields from './MoldFormFields.vue'
+import { emptyMoldForm, getMold, updateMold } from '@/api/mold'
 import { ApiError } from '@/api/client'
 
 const props = defineProps<{
@@ -13,14 +13,14 @@ const emit = defineEmits<{ saved: []; error: [message: string] }>()
 
 const loading = ref(false)
 const saving = ref(false)
-const form = reactive(emptyCustomerForm())
+const form = reactive(emptyMoldForm(''))
 
 const load = async () => {
   if (!props.name) return
   loading.value = true
   try {
-    const doc = await getCustomer(props.name)
-    Object.assign(form, customerDocToForm(doc))
+    const doc = await getMold(props.name)
+    Object.assign(form, doc)
   } finally {
     loading.value = false
   }
@@ -35,7 +35,7 @@ watch(show, (newShow) => {
 const save = async () => {
   saving.value = true
   try {
-    await updateCustomer(props.name, formToUpdatePayload(form))
+    await updateMold(props.name, form)
     show.value = false
     emit('saved')
   } catch (e) {
@@ -47,7 +47,7 @@ const save = async () => {
 </script>
 
 <template>
-  <FormDialog v-model="show" title="거래처 수정" :loading="loading || saving" @save="save">
-    <CustomerFormFields v-model="form" mode="edit" />
+  <FormDialog v-model="show" title="금형관리" :loading="loading || saving" @save="save">
+    <MoldFormFields v-model="form" mode="edit" />
   </FormDialog>
 </template>

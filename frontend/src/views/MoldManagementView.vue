@@ -13,10 +13,33 @@ import {
   type SelectionChangedEvent,
   type ValueFormatterParams,
 } from 'ag-grid-community'
-import { getMoldModelFieldOptions, listMoldModels, type MoldModelListItem } from '@/api/moldModel'
-import { listMolds, type MoldListItem } from '@/api/mold'
+import { deleteMoldModel, getMoldModelFieldOptions, listMoldModels, type MoldModelListItem } from '@/api/moldModel'
+import { deleteMold, listMolds, type MoldListItem } from '@/api/mold'
+import { ApiError } from '@/api/client'
+import MoldModelRowActions from '@/components/moldModel/MoldModelRowActions.vue'
+import MoldModelModifyPopup from '@/components/moldModel/MoldModelModifyPopup.vue'
+import MoldModelRegisterPopup from '@/components/moldModel/MoldModelRegisterPopup.vue'
+import MoldRowActions from '@/components/mold/MoldRowActions.vue'
+import MoldModifyPopup from '@/components/mold/MoldModifyPopup.vue'
+import MoldRegisterPopup from '@/components/mold/MoldRegisterPopup.vue'
 
 ModuleRegistry.registerModules([AllCommunityModule])
+
+const snackbar = ref(false)
+const snackbarText = ref('')
+const snackbarColor = ref<'success' | 'error'>('success')
+
+const notifySuccess = (message: string) => {
+  snackbarColor.value = 'success'
+  snackbarText.value = message
+  snackbar.value = true
+}
+
+const notifyError = (message: string) => {
+  snackbarColor.value = 'error'
+  snackbarText.value = message
+  snackbar.value = true
+}
 
 // 조회조건
 const partnerType = ref('all')
@@ -45,6 +68,32 @@ const modelGridApi = shallowRef<GridApi | null>(null)
 const modelTotalCount = ref<number | undefined>(undefined)
 const selectedModelNumber = ref('')
 
+const showModelModify = ref(false)
+const showModelRegister = ref(false)
+const editingModelNumber = ref('')
+
+const editModel = (modelNumber: string) => {
+  editingModelNumber.value = modelNumber
+  showModelModify.value = true
+}
+
+const deleteModel = async (modelNumber: string) => {
+  if (!window.confirm('형번마스터 정보를 삭제하시겠습니까?')) return
+  try {
+    await deleteMoldModel(modelNumber)
+    notifySuccess('삭제되었습니다.')
+    if (selectedModelNumber.value === modelNumber) selectedModelNumber.value = ''
+    refreshModelGrid()
+  } catch (e) {
+    notifyError(e instanceof ApiError ? e.message : '삭제에 실패했습니다.')
+  }
+}
+
+const onModelSaved = () => {
+  notifySuccess('저장되었습니다.')
+  refreshModelGrid()
+}
+
 const modelColumnDefs: ColDef<MoldModelListItem>[] = [
   { headerName: '형번', field: 'model_number', width: 120 },
   { headerName: '유형구분', field: 'order_type', width: 110 },
@@ -62,6 +111,13 @@ const modelColumnDefs: ColDef<MoldModelListItem>[] = [
     field: 'use_or_not',
     width: 100,
     valueFormatter: (params: ValueFormatterParams) => (params.value ? '사용' : '미사용'),
+  },
+  {
+    headerName: '실행',
+    sortable: false,
+    cellRenderer: MoldModelRowActions,
+    cellRendererParams: { onEdit: editModel, onDelete: deleteModel },
+    width: 100,
   },
 ]
 
@@ -111,9 +167,34 @@ watch([partnerType, useOrNot, searchQuery, selectedPurposes, selectedOrderTypes,
   debounceHandle = window.setTimeout(refreshModelGrid, 400)
 }, { deep: true })
 
-// 금형 그리드 (형번 선택 연동은 다음 단계에서 진행 — 지금은 항상 빈 목록)
+// 금형 그리드
 const moldGridApi = shallowRef<GridApi | null>(null)
 const moldTotalCount = ref<number | undefined>(undefined)
+
+const showMoldModify = ref(false)
+const showMoldRegister = ref(false)
+const editingMoldName = ref('')
+
+const editMold = (name: string) => {
+  editingMoldName.value = name
+  showMoldModify.value = true
+}
+
+const deleteMoldRow = async (name: string) => {
+  if (!window.confirm('금형 정보를 삭제하시겠습니까?')) return
+  try {
+    await deleteMold(name)
+    notifySuccess('삭제되었습니다.')
+    refreshMoldGrid()
+  } catch (e) {
+    notifyError(e instanceof ApiError ? e.message : '삭제에 실패했습니다.')
+  }
+}
+
+const onMoldSaved = () => {
+  notifySuccess('저장되었습니다.')
+  refreshMoldGrid()
+}
 
 const moldColumnDefs: ColDef<MoldListItem>[] = [
   { headerName: '금형번호', field: 'mold_number', width: 140 },
@@ -128,6 +209,13 @@ const moldColumnDefs: ColDef<MoldListItem>[] = [
   { headerName: '제작처입고일', field: 'production_receipt_date', width: 140 },
   { headerName: '폐기일', field: 'disposal_date', width: 120 },
   { headerName: '폐기사유', field: 'disposal_reason', width: 140 },
+  {
+    headerName: '실행',
+    sortable: false,
+    cellRenderer: MoldRowActions,
+    cellRendererParams: { onEdit: editMold, onDelete: deleteMoldRow },
+    width: 100,
+  },
 ]
 
 const buildMoldDatasource = (): IDatasource => ({
@@ -223,13 +311,24 @@ const defaultColDef = { cellClass: ['d-flex', 'align-center'] }
       </v-row>
 
       <v-row>
-        <v-col cols="12">
+        <v-col cols="12" class="d-flex align-center justify-space-between">
           <h3 class="text-h6 mb-2">
             형번마스터
             <span v-if="modelTotalCount != null" class="text-body-2 text-medium-emphasis ml-2">
               총 <span class="text-error font-weight-bold">{{ modelTotalCount }}</span> 건
             </span>
           </h3>
+          <v-tooltip location="top" text="등록하기">
+            <template #activator="{ props: tooltipProps }">
+              <v-avatar size="35">
+                <v-btn v-bind="tooltipProps" class="rounded-circle" color="primary" flat @click="showModelRegister = true">
+                  <v-icon color="white">mdi-plus-circle</v-icon>
+                </v-btn>
+              </v-avatar>
+            </template>
+          </v-tooltip>
+        </v-col>
+        <v-col cols="12">
           <ag-grid-vue
             :column-defs="modelColumnDefs"
             :default-col-def="defaultColDef"
@@ -251,13 +350,31 @@ const defaultColDef = { cellClass: ['d-flex', 'align-center'] }
       </v-row>
 
       <v-row>
-        <v-col cols="12">
+        <v-col cols="12" class="d-flex align-center justify-space-between">
           <h3 class="text-h6 mb-2">
             금형
             <span v-if="moldTotalCount != null" class="text-body-2 text-medium-emphasis ml-2">
               총 <span class="text-error font-weight-bold">{{ moldTotalCount }}</span> 건
             </span>
           </h3>
+          <v-tooltip location="top" text="등록하기">
+            <template #activator="{ props: tooltipProps }">
+              <v-avatar size="35">
+                <v-btn
+                  v-bind="tooltipProps"
+                  class="rounded-circle"
+                  color="primary"
+                  flat
+                  :disabled="!selectedModelNumber"
+                  @click="showMoldRegister = true"
+                >
+                  <v-icon color="white">mdi-plus-circle</v-icon>
+                </v-btn>
+              </v-avatar>
+            </template>
+          </v-tooltip>
+        </v-col>
+        <v-col cols="12">
           <ag-grid-vue
             :column-defs="moldColumnDefs"
             :default-col-def="defaultColDef"
@@ -277,4 +394,18 @@ const defaultColDef = { cellClass: ['d-flex', 'align-center'] }
       </v-row>
     </v-card-text>
   </v-card>
+
+  <MoldModelModifyPopup v-model="showModelModify" :model-number="editingModelNumber" @saved="onModelSaved" @error="notifyError" />
+  <MoldModelRegisterPopup v-model="showModelRegister" @saved="onModelSaved" @error="notifyError" />
+  <MoldModifyPopup v-model="showMoldModify" :name="editingMoldName" @saved="onMoldSaved" @error="notifyError" />
+  <MoldRegisterPopup
+    v-model="showMoldRegister"
+    :mold-model="selectedModelNumber"
+    @saved="onMoldSaved"
+    @error="notifyError"
+  />
+
+  <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="3000">
+    {{ snackbarText }}
+  </v-snackbar>
 </template>

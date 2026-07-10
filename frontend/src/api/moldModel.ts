@@ -1,4 +1,4 @@
-import { apiGet, apiPut, apiPost } from './client'
+import { apiDelete, apiGet, apiPost, apiPut } from './client'
 
 const DOCTYPE = 'Mold Model'
 
@@ -71,6 +71,46 @@ export interface MoldModelDoc {
   modification_content: string | null
   disposal_date: string | null
   disposal_reason: string | null
+}
+
+export function emptyMoldModelForm(): Partial<MoldModelDoc> {
+  return {
+    model_number: '',
+    business_type: '',
+    order_type: '',
+    vendor: '',
+    vendor_model_number: '',
+    site_name: '',
+    mold_type: '',
+    purpose: '',
+    texture_heat_treatment: '',
+    surface_treatment_method: '',
+    nitrogen_gas: 0,
+    drawing_image: '',
+    insulation_division: '',
+    insulation_type_name: '',
+    insulation_area: 0,
+    partner_type: '',
+    partner_company: '',
+    partner_model_number: '',
+    quality_precaution_flag: 0,
+    quality_precaution: '',
+    stock: 0,
+    thickness: 0,
+    internal_surface_area: 0,
+    area: 0,
+    circumscriber: 0,
+    unit_weight: 0,
+    width: 0,
+    external_surface_area: 0,
+    height: 0,
+    use_or_not: 1,
+    creation_date: '',
+    modification_date: '',
+    modification_content: '',
+    disposal_date: '',
+    disposal_reason: '',
+  }
 }
 
 export interface MoldModelListFilters {
@@ -150,6 +190,10 @@ export async function updateMoldModel(name: string, patch: MoldModelUpdatePayloa
 export async function createMoldModel(patch: MoldModelCreatePayload): Promise<MoldModelDoc> {
   const res = await apiPost<DocResponse<MoldModelDoc>>(`/resource/${encodeURIComponent(DOCTYPE)}`, patch)
   return res.data
+}
+
+export async function deleteMoldModel(name: string): Promise<void> {
+  await apiDelete(`/resource/${encodeURIComponent(DOCTYPE)}/${encodeURIComponent(name)}`)
 }
 
 const optionsCache = new Map<string, string[]>()

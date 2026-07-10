@@ -1,26 +1,26 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue'
 import FormDialog from '@/components/FormDialog.vue'
-import CustomerFormFields from './CustomerFormFields.vue'
-import { createCustomer, emptyCustomerForm, formToCreatePayload } from '@/api/customer'
+import MoldModelFormFields from './MoldModelFormFields.vue'
+import { createMoldModel, emptyMoldModelForm, type MoldModelCreatePayload } from '@/api/moldModel'
 import { ApiError } from '@/api/client'
 
 const show = defineModel<boolean>({ default: false })
 const emit = defineEmits<{ saved: []; error: [message: string] }>()
 
 const saving = ref(false)
-const form = reactive(emptyCustomerForm())
+const form = reactive(emptyMoldModelForm())
 
 watch(show, (newShow) => {
   if (newShow) {
-    Object.assign(form, emptyCustomerForm())
+    Object.assign(form, emptyMoldModelForm())
   }
 })
 
 const save = async () => {
   saving.value = true
   try {
-    await createCustomer(formToCreatePayload(form))
+    await createMoldModel(form as MoldModelCreatePayload)
     show.value = false
     emit('saved')
   } catch (e) {
@@ -32,7 +32,7 @@ const save = async () => {
 </script>
 
 <template>
-  <FormDialog v-model="show" title="거래처 신규 등록" :loading="saving" @save="save">
-    <CustomerFormFields v-model="form" mode="create" />
+  <FormDialog v-model="show" title="형번마스터 신규 등록" :loading="saving" @save="save">
+    <MoldModelFormFields v-model="form" mode="create" />
   </FormDialog>
 </template>

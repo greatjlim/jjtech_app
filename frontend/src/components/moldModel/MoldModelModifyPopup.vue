@@ -1,26 +1,26 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue'
 import FormDialog from '@/components/FormDialog.vue'
-import CustomerFormFields from './CustomerFormFields.vue'
-import { customerDocToForm, emptyCustomerForm, formToUpdatePayload, getCustomer, updateCustomer } from '@/api/customer'
+import MoldModelFormFields from './MoldModelFormFields.vue'
+import { emptyMoldModelForm, getMoldModel, updateMoldModel } from '@/api/moldModel'
 import { ApiError } from '@/api/client'
 
 const props = defineProps<{
-  name: string
+  modelNumber: string
 }>()
 const show = defineModel<boolean>({ default: false })
 const emit = defineEmits<{ saved: []; error: [message: string] }>()
 
 const loading = ref(false)
 const saving = ref(false)
-const form = reactive(emptyCustomerForm())
+const form = reactive(emptyMoldModelForm())
 
 const load = async () => {
-  if (!props.name) return
+  if (!props.modelNumber) return
   loading.value = true
   try {
-    const doc = await getCustomer(props.name)
-    Object.assign(form, customerDocToForm(doc))
+    const doc = await getMoldModel(props.modelNumber)
+    Object.assign(form, doc)
   } finally {
     loading.value = false
   }
@@ -35,7 +35,7 @@ watch(show, (newShow) => {
 const save = async () => {
   saving.value = true
   try {
-    await updateCustomer(props.name, formToUpdatePayload(form))
+    await updateMoldModel(props.modelNumber, form)
     show.value = false
     emit('saved')
   } catch (e) {
@@ -47,7 +47,7 @@ const save = async () => {
 </script>
 
 <template>
-  <FormDialog v-model="show" title="거래처 수정" :loading="loading || saving" @save="save">
-    <CustomerFormFields v-model="form" mode="edit" />
+  <FormDialog v-model="show" title="형번마스터" :loading="loading || saving" @save="save">
+    <MoldModelFormFields v-model="form" mode="edit" />
   </FormDialog>
 </template>
