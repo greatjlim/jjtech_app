@@ -1,0 +1,276 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:model_number",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "model_number",
+  "business_type",
+  "order_type",
+  "vendor",
+  "vendor_model_number",
+  "site_name",
+  "mold_type",
+  "purpose",
+  "texture_heat_treatment",
+  "surface_treatment_method",
+  "nitrogen_gas",
+  "drawing_image",
+  "insulation_division",
+  "insulation_type_name",
+  "insulation_area",
+  "partner_type",
+  "partner_company",
+  "partner_model_number",
+  "quality_precaution_flag",
+  "quality_precaution",
+  "stock",
+  "thickness",
+  "internal_surface_area",
+  "area",
+  "circumscriber",
+  "unit_weight",
+  "width",
+  "external_surface_area",
+  "height",
+  "use_or_not",
+  "creation_date",
+  "modification_date",
+  "modification_content",
+  "disposal_date",
+  "disposal_reason"
+ ],
+ "fields": [
+  {
+   "fieldname": "model_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "형번",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "business_type",
+   "fieldtype": "Select",
+   "label": "영업구분",
+   "options": "내수\n수출"
+  },
+  {
+   "fieldname": "order_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "유형구분",
+   "options": "신규\n복구\n수정"
+  },
+  {
+   "fieldname": "vendor",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "수주처",
+   "options": "Customer",
+   "reqd": 1
+  },
+  {
+   "fieldname": "vendor_model_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "수주처형번"
+  },
+  {
+   "fieldname": "site_name",
+   "fieldtype": "Data",
+   "label": "현장명"
+  },
+  {
+   "fieldname": "mold_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "TYPE",
+   "options": "SOLID\nHOLLOW\nSemi Hollow",
+   "reqd": 1
+  },
+  {
+   "fieldname": "purpose",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "용도",
+   "options": "각재\n환재\n이형재"
+  },
+  {
+   "fieldname": "texture_heat_treatment",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "재질/열처리",
+   "options": "SKD61-QT\nSTD61-QT\nH13-QT"
+  },
+  {
+   "fieldname": "surface_treatment_method",
+   "fieldtype": "Select",
+   "label": "표면처리방법",
+   "options": "무처리\n질화처리\nPVD코팅"
+  },
+  {
+   "default": "0",
+   "fieldname": "nitrogen_gas",
+   "fieldtype": "Check",
+   "label": "질소가스투입"
+  },
+  {
+   "fieldname": "drawing_image",
+   "fieldtype": "Attach Image",
+   "label": "도면이미지"
+  },
+  {
+   "fieldname": "insulation_division",
+   "fieldtype": "Select",
+   "label": "단열구분",
+   "options": "무\nA"
+  },
+  {
+   "fieldname": "insulation_type_name",
+   "fieldtype": "Data",
+   "label": "단열타입"
+  },
+  {
+   "fieldname": "insulation_area",
+   "fieldtype": "Float",
+   "label": "단열면적"
+  },
+  {
+   "fieldname": "partner_type",
+   "fieldtype": "Select",
+   "label": "파트너구분",
+   "options": "No\n외가공\n공동생산",
+   "reqd": 1
+  },
+  {
+   "fieldname": "partner_company",
+   "fieldtype": "Link",
+   "label": "파트너업체",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "partner_model_number",
+   "fieldtype": "Data",
+   "label": "파트너처 형번"
+  },
+  {
+   "default": "0",
+   "fieldname": "quality_precaution_flag",
+   "fieldtype": "Check",
+   "label": "품질주의사항여부"
+  },
+  {
+   "fieldname": "quality_precaution",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "품질주의사항"
+  },
+  {
+   "fieldname": "stock",
+   "fieldtype": "Int",
+   "label": "금형보유수량"
+  },
+  {
+   "fieldname": "thickness",
+   "fieldtype": "Float",
+   "label": "두께"
+  },
+  {
+   "fieldname": "internal_surface_area",
+   "fieldtype": "Float",
+   "label": "내부 표면적"
+  },
+  {
+   "fieldname": "area",
+   "fieldtype": "Float",
+   "label": "단면적"
+  },
+  {
+   "fieldname": "circumscriber",
+   "fieldtype": "Float",
+   "label": "형재외접원"
+  },
+  {
+   "fieldname": "unit_weight",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "단중",
+   "reqd": 1
+  },
+  {
+   "fieldname": "width",
+   "fieldtype": "Float",
+   "label": "폭"
+  },
+  {
+   "fieldname": "external_surface_area",
+   "fieldtype": "Float",
+   "label": "외부 표면적"
+  },
+  {
+   "fieldname": "height",
+   "fieldtype": "Float",
+   "label": "높이"
+  },
+  {
+   "default": "1",
+   "fieldname": "use_or_not",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "사용여부"
+  },
+  {
+   "fieldname": "creation_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "생성일자"
+  },
+  {
+   "fieldname": "modification_date",
+   "fieldtype": "Date",
+   "label": "변경일자"
+  },
+  {
+   "fieldname": "modification_content",
+   "fieldtype": "Data",
+   "label": "변경내용"
+  },
+  {
+   "fieldname": "disposal_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "폐기일자"
+  },
+  {
+   "fieldname": "disposal_reason",
+   "fieldtype": "Data",
+   "label": "폐기사유"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "module": "Jjtech App",
+ "name": "Mold Model",
+ "naming_rule": "By fieldname",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "model_number",
+ "track_changes": 1
+}
