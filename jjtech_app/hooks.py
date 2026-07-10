@@ -5,6 +5,31 @@ app_description = "Custom app for JJtech"
 app_email = "greatjlim@gmail.com"
 app_license = "mit"
 
+# Fixtures
+# ------------------
+# Export customizations that belong to this app's module only, so installing
+# jjtech_app on another site does not pull in unrelated Custom Fields /
+# Property Setters / Scripts created by other apps.
+
+fixtures = [
+	{
+		"doctype": "Custom Field",
+		"filters": [["module", "=", "Jjtech App"]],
+	},
+	{
+		"doctype": "Property Setter",
+		"filters": [["module", "=", "Jjtech App"]],
+	},
+	{
+		"doctype": "Client Script",
+		"filters": [["module", "=", "Jjtech App"]],
+	},
+	{
+		"doctype": "Server Script",
+		"filters": [["module", "=", "Jjtech App"]],
+	},
+]
+
 # Apps
 # ------------------
 
