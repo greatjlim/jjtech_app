@@ -5,6 +5,7 @@ import {
   AllCommunityModule,
   ModuleRegistry,
   themeQuartz,
+  type CellClickedEvent,
   type ColDef,
   type GridApi,
   type GridReadyEvent,
@@ -70,6 +71,12 @@ const editingName = ref('')
 const editWorkOrder = (name: string) => {
   editingName.value = name
   showModify.value = true
+}
+
+// "실행" 컬럼(field 없음)을 클릭했을 때는 그 안의 버튼이 처리하므로 팝업을 띄우지 않는다.
+const onGridCellClicked = (event: CellClickedEvent<WorkOrderListItem>) => {
+  if (!event.colDef.field || !event.data) return
+  editWorkOrder(event.data.name)
 }
 
 const onSaved = () => {
@@ -225,6 +232,7 @@ const defaultColDef = { cellClass: ['d-flex', 'align-center'] }
             style="height: 500px; width: 100%"
             suppress-drag-leave-hides-columns
             @grid-ready="onGridReady"
+            @cell-clicked="onGridCellClicked"
           />
         </v-col>
       </v-row>

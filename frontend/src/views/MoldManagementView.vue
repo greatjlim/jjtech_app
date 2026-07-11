@@ -5,6 +5,7 @@ import {
   AllCommunityModule,
   ModuleRegistry,
   themeQuartz,
+  type CellClickedEvent,
   type ColDef,
   type GridApi,
   type GridReadyEvent,
@@ -161,6 +162,12 @@ const onModelSelectionChanged = (event: SelectionChangedEvent<MoldModelListItem>
   selectedModelNumber.value = rows[0]?.model_number ?? ''
 }
 
+// "실행" 컬럼(field 없음)을 클릭했을 때는 그 안의 버튼이 처리하므로 팝업을 띄우지 않는다.
+const onModelCellClicked = (event: CellClickedEvent<MoldModelListItem>) => {
+  if (!event.colDef.field || !event.data) return
+  editModel(event.data.model_number)
+}
+
 let debounceHandle: number | undefined
 watch([partnerType, useOrNot, searchQuery, selectedPurposes, selectedOrderTypes, registerStartDate, registerEndDate], () => {
   window.clearTimeout(debounceHandle)
@@ -239,6 +246,11 @@ const onMoldGridReady = (event: GridReadyEvent) => {
 
 const refreshMoldGrid = () => {
   moldGridApi.value?.setGridOption('datasource', buildMoldDatasource())
+}
+
+const onMoldCellClicked = (event: CellClickedEvent<MoldListItem>) => {
+  if (!event.colDef.field || !event.data) return
+  editMold(event.data.name)
 }
 
 watch(selectedModelNumber, () => {
@@ -345,6 +357,7 @@ const defaultColDef = { cellClass: ['d-flex', 'align-center'] }
             suppress-drag-leave-hides-columns
             @grid-ready="onModelGridReady"
             @selection-changed="onModelSelectionChanged"
+            @cell-clicked="onModelCellClicked"
           />
         </v-col>
       </v-row>
@@ -389,6 +402,7 @@ const defaultColDef = { cellClass: ['d-flex', 'align-center'] }
             style="height: 400px; width: 100%"
             suppress-drag-leave-hides-columns
             @grid-ready="onMoldGridReady"
+            @cell-clicked="onMoldCellClicked"
           />
         </v-col>
       </v-row>

@@ -5,6 +5,7 @@ import {
   AllCommunityModule,
   ModuleRegistry,
   themeQuartz,
+  type CellClickedEvent,
   type ColDef,
   type GridApi,
   type GridReadyEvent,
@@ -184,6 +185,12 @@ const onOrderSelectionChanged = (event: SelectionChangedEvent<SalesOrderListItem
   selectedOrderName.value = rows[0]?.name ?? ''
 }
 
+// "실행" 컬럼(field 없음)을 클릭했을 때는 그 안의 버튼이 처리하므로 팝업을 띄우지 않는다.
+const onOrderCellClicked = (event: CellClickedEvent<SalesOrderListItem>) => {
+  if (!event.colDef.field || !event.data) return
+  editOrder(event.data.name)
+}
+
 let debounceHandle: number | undefined
 watch([status, searchQuery, orderDateStart, orderDateEnd, deliveryDateStart, deliveryDateEnd], () => {
   window.clearTimeout(debounceHandle)
@@ -327,6 +334,7 @@ const defaultColDef = { cellClass: ['d-flex', 'align-center'] }
             suppress-drag-leave-hides-columns
             @grid-ready="onOrderGridReady"
             @selection-changed="onOrderSelectionChanged"
+            @cell-clicked="onOrderCellClicked"
           />
         </v-col>
       </v-row>

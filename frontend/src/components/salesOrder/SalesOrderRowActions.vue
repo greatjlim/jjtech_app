@@ -13,7 +13,7 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div>
+  <div v-if="props.params.data">
     <v-tooltip text="조회/수정">
       <template #activator="{ props: tooltipProps }">
         <v-btn v-bind="tooltipProps" icon flat variant="plain" @click="props.params.onEdit(props.params.data!.name)">
