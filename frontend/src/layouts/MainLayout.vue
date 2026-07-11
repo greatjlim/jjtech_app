@@ -114,7 +114,11 @@ const logout = async () => {
     <v-main>
       <TabStrip />
       <v-container fluid>
-        <router-view />
+        <router-view v-slot="{ Component, route: currentRoute }">
+          <keep-alive>
+            <component :is="Component" :key="currentRoute.path" />
+          </keep-alive>
+        </router-view>
       </v-container>
     </v-main>
   </v-app>
