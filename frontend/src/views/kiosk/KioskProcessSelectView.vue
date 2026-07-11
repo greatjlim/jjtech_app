@@ -32,6 +32,10 @@ onUnmounted(() => {
 })
 
 const selectStage = (stage: string) => {
+  if (stage === '금형예열') {
+    router.push(`/kiosk/${encodeURIComponent(workstation.value)}/preheat`)
+    return
+  }
   if (!status.value?.available[stage]) return
   router.push(`/kiosk/${encodeURIComponent(workstation.value)}/${encodeURIComponent(stage)}`)
 }
@@ -58,15 +62,15 @@ const goBack = () => {
   <v-row>
     <v-col v-for="stage in STAGES" :key="stage" cols="12" md="4">
       <v-card
-        :disabled="!status?.available[stage]"
-        :color="status?.available[stage] ? 'primary' : undefined"
-        :variant="status?.available[stage] ? 'tonal' : 'outlined'"
+        :disabled="stage !== '금형예열' && !status?.available[stage]"
+        :color="stage === '금형예열' || status?.available[stage] ? 'primary' : undefined"
+        :variant="stage === '금형예열' || status?.available[stage] ? 'tonal' : 'outlined'"
         class="pa-8 text-center stage-card"
         @click="selectStage(stage)"
       >
         <v-icon :icon="STAGE_ICON[stage]" size="64" class="mb-4" />
         <div class="text-h4 font-weight-bold mb-2">{{ stage }}</div>
-        <div v-if="status && !status.available[stage]" class="text-body-1 text-medium-emphasis">
+        <div v-if="stage !== '금형예열' && status && !status.available[stage]" class="text-body-1 text-medium-emphasis">
           {{ status.reasons[stage] }}
         </div>
       </v-card>
