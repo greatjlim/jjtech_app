@@ -11,9 +11,37 @@ import {
   type IDatasource,
   type IGetRowsParams,
 } from 'ag-grid-community'
-import { getWorkOrderFieldOptions, listWorkOrders, listWorkstations, type WorkOrderListItem } from '@/api/workOrder'
+import {
+  cancelWorkOrder,
+  deleteWorkOrder,
+  getWorkOrderFieldOptions,
+  listWorkOrders,
+  listWorkstations,
+  submitWorkOrder,
+  type WorkOrderListItem,
+} from '@/api/workOrder'
+import { ApiError } from '@/api/client'
+import WorkOrderRowActions from '@/components/workOrder/WorkOrderRowActions.vue'
+import WorkOrderModifyPopup from '@/components/workOrder/WorkOrderModifyPopup.vue'
+import WorkOrderRegisterPopup from '@/components/workOrder/WorkOrderRegisterPopup.vue'
 
 ModuleRegistry.registerModules([AllCommunityModule])
+
+const snackbar = ref(false)
+const snackbarText = ref('')
+const snackbarColor = ref<'success' | 'error'>('success')
+
+const notifySuccess = (message: string) => {
+  snackbarColor.value = 'success'
+  snackbarText.value = message
+  snackbar.value = true
+}
+
+const notifyError = (message: string) => {
+  snackbarColor.value = 'error'
+  snackbarText.value = message
+  snackbar.value = true
+}
 
 // 조회조건
 const workstation = ref('all')
@@ -35,6 +63,53 @@ onMounted(async () => {
 const gridApi = shallowRef<GridApi | null>(null)
 const totalCount = ref<number | undefined>(undefined)
 
+const showModify = ref(false)
+const showRegister = ref(false)
+const editingName = ref('')
+
+const editWorkOrder = (name: string) => {
+  editingName.value = name
+  showModify.value = true
+}
+
+const onSaved = () => {
+  notifySuccess('저장되었습니다.')
+  refresh()
+}
+
+const submitOrder = async (name: string) => {
+  if (!window.confirm('생산지시를 내리시겠습니까? 제출 후에는 수정할 수 없습니다.')) return
+  try {
+    await submitWorkOrder(name)
+    notifySuccess('생산지시가 내려졌습니다.')
+    refresh()
+  } catch (e) {
+    notifyError(e instanceof ApiError ? e.message : '제출에 실패했습니다.')
+  }
+}
+
+const cancelOrder = async (name: string) => {
+  if (!window.confirm('제출을 취소하시겠습니까?')) return
+  try {
+    await cancelWorkOrder(name)
+    notifySuccess('제출이 취소되었습니다.')
+    refresh()
+  } catch (e) {
+    notifyError(e instanceof ApiError ? e.message : '제출취소에 실패했습니다.')
+  }
+}
+
+const deleteOrder = async (name: string) => {
+  if (!window.confirm('작업지시를 삭제하시겠습니까?')) return
+  try {
+    await deleteWorkOrder(name)
+    notifySuccess('삭제되었습니다.')
+    refresh()
+  } catch (e) {
+    notifyError(e instanceof ApiError ? e.message : '삭제에 실패했습니다.')
+  }
+}
+
 const columnDefs: ColDef<WorkOrderListItem>[] = [
   { headerName: '작업지시번호', field: 'name', width: 160 },
   { headerName: '품목', field: 'item_name', width: 200 },
@@ -44,6 +119,13 @@ const columnDefs: ColDef<WorkOrderListItem>[] = [
   { headerName: '작업예정일', field: 'planned_start_date', width: 130 },
   { headerName: '납기', field: 'expected_delivery_date', width: 130 },
   { headerName: '상태', field: 'status', width: 140 },
+  {
+    headerName: '실행',
+    sortable: false,
+    cellRenderer: WorkOrderRowActions,
+    cellRendererParams: { onEdit: editWorkOrder, onSubmit: submitOrder, onCancel: cancelOrder, onDelete: deleteOrder },
+    width: 130,
+  },
 ]
 
 const buildDatasource = (): IDatasource => ({
@@ -84,7 +166,7 @@ watch([workstation, status, searchQuery], () => {
 })
 
 const insert = () => {
-  // 등록 팝업은 다음 단계에서 연결
+  showRegister.value = true
 }
 
 const defaultColDef = { cellClass: ['d-flex', 'align-center'] }
@@ -147,4 +229,11 @@ const defaultColDef = { cellClass: ['d-flex', 'align-center'] }
       </v-row>
     </v-card-text>
   </v-card>
+
+  <WorkOrderModifyPopup v-model="showModify" :name="editingName" @saved="onSaved" @error="notifyError" />
+  <WorkOrderRegisterPopup v-model="showRegister" @saved="onSaved" @error="notifyError" />
+
+  <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="4000">
+    {{ snackbarText }}
+  </v-snackbar>
 </template>
