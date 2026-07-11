@@ -128,129 +128,130 @@ const doComplete = async () => {
     </div>
   </div>
 
-  <v-row>
-    <v-col cols="12" md="4">
-      <v-card class="pa-4 h-100">
-        <div class="text-h6 mb-3">작업정보</div>
+  <v-row dense>
+    <v-col cols="12" md="3">
+      <v-card class="pa-3 h-100">
+        <div class="text-subtitle-1 font-weight-bold mb-2">작업정보</div>
         <v-row dense>
-          <v-col cols="6"><div class="text-caption">절단방법</div><div class="text-h6">{{ recipe?.cutting_method || '-' }}</div></v-col>
-          <v-col cols="6"><div class="text-caption">빌렛트길이</div><div class="text-h6">{{ recipe?.billet_length }}</div></v-col>
-          <v-col cols="6"><div class="text-caption">빌렛트수량</div><div class="text-h6">{{ recipe?.billet_qty }}</div></v-col>
-          <v-col cols="6"><div class="text-caption">압출길이</div><div class="text-h6">{{ recipe?.extrusion_length }}</div></v-col>
-          <v-col cols="6"><div class="text-caption">개당제품수</div><div class="text-h6">{{ recipe?.pieces_per_billet }}</div></v-col>
+          <v-col cols="6"><div class="text-caption">절단방법</div><div class="text-body-1">{{ recipe?.cutting_method || '-' }}</div></v-col>
+          <v-col cols="6"><div class="text-caption">빌렛트길이</div><div class="text-body-1">{{ recipe?.billet_length }}</div></v-col>
+          <v-col cols="6"><div class="text-caption">빌렛트수량</div><div class="text-body-1">{{ recipe?.billet_qty }}</div></v-col>
+          <v-col cols="6"><div class="text-caption">압출길이</div><div class="text-body-1">{{ recipe?.extrusion_length }}</div></v-col>
+          <v-col cols="6"><div class="text-caption">개당제품수</div><div class="text-body-1">{{ recipe?.pieces_per_billet }}</div></v-col>
           <v-col cols="6">
             <div class="text-caption">작업대상수량</div>
-            <div class="text-h6 font-weight-bold text-error">{{ recipe?.target_qty }}</div>
+            <div class="text-body-1 font-weight-bold text-error">{{ recipe?.target_qty }}</div>
           </v-col>
         </v-row>
       </v-card>
     </v-col>
 
-    <v-col cols="12" md="4">
-      <v-card class="pa-4 h-100">
-        <div class="text-h6 mb-3">압출 및 빌레트투입 정보</div>
+    <v-col cols="12" md="6">
+      <v-card class="pa-3 h-100">
+        <div class="text-subtitle-1 font-weight-bold mb-2">압출 및 빌레트투입 정보</div>
         <template v-if="selectedRow">
-          <v-row dense class="mb-3">
-            <v-col cols="6"><div class="text-caption">작지번호</div><div class="text-body-1">{{ selectedRow.name }}</div></v-col>
-            <v-col cols="6"><div class="text-caption">수주처명</div><div class="text-body-1">{{ selectedRow.customer_name || '-' }}</div></v-col>
-            <v-col cols="6"><div class="text-caption">규격</div><div class="text-body-1">{{ selectedRow.spec || '-' }}</div></v-col>
-            <v-col cols="6"><div class="text-caption">재질</div><div class="text-body-1">{{ selectedRow.material || '-' }}</div></v-col>
-            <v-col cols="6"><div class="text-caption">수량</div><div class="text-body-1">{{ selectedRow.qty }}</div></v-col>
-            <v-col cols="6"><div class="text-caption">중량</div><div class="text-body-1">{{ selectedRow.weight || '-' }}</div></v-col>
-          </v-row>
+          <v-row dense>
+            <v-col cols="12" sm="5">
+              <div class="mb-1"><span class="text-caption">작지번호</span> <span class="text-body-2">{{ selectedRow.name }}</span></div>
+              <div class="mb-1"><span class="text-caption">수주처명</span> <span class="text-body-2">{{ selectedRow.customer_name || '-' }}</span></div>
+              <div class="mb-1"><span class="text-caption">규격</span> <span class="text-body-2">{{ selectedRow.spec || '-' }}</span></div>
+              <div class="mb-1"><span class="text-caption">재질</span> <span class="text-body-2">{{ selectedRow.material || '-' }}</span></div>
+              <div class="mb-1"><span class="text-caption">수량</span> <span class="text-body-2">{{ selectedRow.qty }}</span></div>
+              <div class="mb-2"><span class="text-caption">중량</span> <span class="text-body-2">{{ selectedRow.weight || '-' }}</span></div>
 
-          <v-divider class="mb-3" />
-          <div class="text-body-2 mb-2">절단길이 / 절단수량</div>
-          <div v-if="!inProgress" class="text-caption text-medium-emphasis mb-2">
-            작업시작을 눌러야 입력할 수 있습니다.
-          </div>
-          <v-row v-for="i in 5" :key="i" dense>
-            <v-col cols="6">
-              <v-text-field
-                v-model.number="cuts[i - 1].length"
-                :label="`절단길이${i}${i === 1 ? ' *' : ''}`"
-                type="number"
-                variant="outlined"
-                density="compact"
-                :disabled="!inProgress"
-              />
+              <v-btn
+                v-if="!inProgress && selectedRow.extrusion_status !== '완료'"
+                block
+                size="large"
+                height="48"
+                color="primary"
+                :loading="busy"
+                @click="doStart"
+              >
+                작업시작
+              </v-btn>
+              <v-btn
+                v-else-if="inProgress"
+                block
+                size="large"
+                height="48"
+                color="success"
+                :loading="busy"
+                @click="doComplete"
+              >
+                작업완료
+              </v-btn>
+              <div v-else class="text-body-1 text-success font-weight-bold">이미 완료되었습니다.</div>
             </v-col>
-            <v-col cols="6">
-              <v-text-field
-                v-model.number="cuts[i - 1].qty"
-                :label="`절단수량${i}${i === 1 ? ' *' : ''}`"
-                type="number"
-                variant="outlined"
-                density="compact"
-                :disabled="!inProgress"
-              />
+
+            <v-col cols="12" sm="7">
+              <div class="text-caption text-medium-emphasis mb-1">절단길이 / 절단수량</div>
+              <div v-if="!inProgress" class="text-caption text-medium-emphasis mb-1">작업시작 후 입력 가능</div>
+              <div v-for="i in 5" :key="i" class="d-flex ga-1 mb-1">
+                <v-text-field
+                  v-model.number="cuts[i - 1].length"
+                  :label="`길이${i}${i === 1 ? '*' : ''}`"
+                  type="number"
+                  variant="outlined"
+                  density="compact"
+                  hide-details
+                  style="max-width: 45%"
+                  :disabled="!inProgress"
+                />
+                <v-text-field
+                  v-model.number="cuts[i - 1].qty"
+                  :label="`수량${i}${i === 1 ? '*' : ''}`"
+                  type="number"
+                  variant="outlined"
+                  density="compact"
+                  hide-details
+                  style="max-width: 45%"
+                  :disabled="!inProgress"
+                />
+              </div>
             </v-col>
           </v-row>
-
-          <v-btn
-            v-if="!inProgress && selectedRow.extrusion_status !== '완료'"
-            block
-            size="large"
-            height="64"
-            color="primary"
-            class="mt-4"
-            :loading="busy"
-            @click="doStart"
-          >
-            작업시작
-          </v-btn>
-          <v-btn
-            v-else-if="inProgress"
-            block
-            size="large"
-            height="64"
-            color="success"
-            class="mt-4"
-            :loading="busy"
-            @click="doComplete"
-          >
-            작업완료
-          </v-btn>
-          <div v-else class="text-h6 text-success mt-4">이미 완료되었습니다.</div>
         </template>
         <div v-else class="text-medium-emphasis pa-8 text-center">대기열에서 작업지시를 선택하세요</div>
       </v-card>
     </v-col>
 
-    <v-col cols="12" md="4">
-      <v-card class="pa-4 h-100">
-        <div class="text-h6 mb-3">도면</div>
-        <v-img v-if="recipe?.drawing_image" :src="recipe.drawing_image" max-height="360" contain />
+    <v-col cols="12" md="3">
+      <v-card class="pa-3 h-100">
+        <div class="text-subtitle-1 font-weight-bold mb-2">도면</div>
+        <v-img v-if="recipe?.drawing_image" :src="recipe.drawing_image" max-height="200" contain />
         <div v-else class="text-medium-emphasis pa-8 text-center">등록된 도면이 없습니다</div>
       </v-card>
     </v-col>
   </v-row>
 
-  <h2 class="text-h6 mt-6 mb-2">작업지시 대기열 (같은 형번)</h2>
-  <v-row>
+  <h2 class="text-subtitle-1 font-weight-bold mt-3 mb-1">작업지시 대기열 (같은 형번)</h2>
+  <v-row dense>
     <v-col v-for="row in queue" :key="row.name" cols="12" md="6" lg="4">
       <v-card
-        class="pa-4"
+        class="pa-2"
         :color="selectedRow?.name === row.name ? 'primary' : undefined"
         :variant="selectedRow?.name === row.name ? 'tonal' : 'outlined'"
         @click="selectRow(row)"
       >
-        <div class="d-flex justify-space-between">
-          <span class="text-h6 font-weight-bold">{{ row.name }}</span>
+        <div class="d-flex justify-space-between align-center">
+          <span class="text-body-1 font-weight-bold">{{ row.name }}</span>
           <v-chip
             :color="row.extrusion_status === '완료' ? 'success' : row.extrusion_status === '진행중' ? 'warning' : undefined"
-            size="small"
+            size="x-small"
           >
             {{ row.extrusion_status || '지시' }}
           </v-chip>
         </div>
-        <div class="text-body-2 text-medium-emphasis">{{ row.customer_name || '-' }} · 규격 {{ row.spec || '-' }}</div>
-        <div class="text-body-2 text-medium-emphasis">색상 {{ row.color || '-' }} · 재질 {{ row.material || '-' }} · 열처리 {{ row.heat_treatment || '-' }}</div>
-        <div class="text-body-2 text-medium-emphasis">수량 {{ row.qty }} · 중량 {{ row.weight || '-' }}</div>
+        <div class="text-caption text-medium-emphasis">
+          {{ row.customer_name || '-' }} · 규격 {{ row.spec || '-' }} · 색상 {{ row.color || '-' }} · 재질
+          {{ row.material || '-' }} · 열처리 {{ row.heat_treatment || '-' }} · 수량 {{ row.qty }} · 중량
+          {{ row.weight || '-' }}
+        </div>
       </v-card>
     </v-col>
   </v-row>
-  <div v-if="!loading && queue.length === 0" class="text-center text-medium-emphasis pa-8">대기열이 비어 있습니다.</div>
+  <div v-if="!loading && queue.length === 0" class="text-center text-medium-emphasis pa-4">대기열이 비어 있습니다.</div>
 
   <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="4000">
     {{ snackbarText }}
