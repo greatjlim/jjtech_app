@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useTheme } from 'vuetify'
 import { useRouter } from 'vue-router'
 import { authStore, authActions } from '@/stores/auth'
@@ -8,8 +8,11 @@ import { THEME_DARK, THEME_LIGHT } from '@/plugins/vuetify'
 
 const router = useRouter()
 const drawer = ref(true)
+const rail = ref(false)
 const theme = useTheme()
 const isDark = ref(false)
+
+const initials = computed(() => (authStore.fullName || authStore.user || '?').trim().slice(0, 1).toUpperCase())
 
 onMounted(async () => {
   if (!authStore.user) return
@@ -47,19 +50,17 @@ const logout = async () => {
   <v-app>
     <v-app-bar color="primary" elevation="2">
       <v-app-bar-nav-icon class="hidden-lg-and-up" @click="drawer = !drawer" />
+      <v-btn icon variant="text" class="hidden-md-and-down" @click="rail = !rail">
+        <v-icon>{{ rail ? 'mdi-menu-open' : 'mdi-menu' }}</v-icon>
+      </v-btn>
       <div class="text-h6 font-weight-bold font-italic ml-2">JJTech</div>
       <v-spacer />
       <v-btn icon variant="text" @click="toggleTheme">
         <v-icon>{{ isDark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
       </v-btn>
-      <span class="text-body-2 mr-4">{{ authStore.fullName }}</span>
-      <v-btn variant="text" @click="logout">
-        <v-icon start>mdi-logout</v-icon>
-        로그아웃
-      </v-btn>
     </v-app-bar>
 
-    <v-navigation-drawer v-model="drawer" app>
+    <v-navigation-drawer v-model="drawer" :rail="rail" rail-width="72" app>
       <v-list nav>
         <v-list-item to="/dashboard" prepend-icon="mdi-view-dashboard" title="대시보드" />
         <v-list-item to="/companies" prepend-icon="mdi-domain" title="회사 관리" />
@@ -70,6 +71,34 @@ const logout = async () => {
         <v-list-item to="/work-orders" prepend-icon="mdi-factory" title="작업지시" />
         <v-list-item to="/shipments" prepend-icon="mdi-truck-delivery" title="출고관리" />
       </v-list>
+
+      <template #append>
+        <v-divider />
+        <div class="d-flex align-center pa-3" :class="rail ? 'justify-center' : ''">
+          <v-tooltip v-if="rail" text="로그아웃">
+            <template #activator="{ props: tooltipProps }">
+              <v-avatar v-bind="tooltipProps" color="primary" size="36" style="cursor: pointer" @click="logout">
+                <span class="text-body-2 font-weight-bold">{{ initials }}</span>
+              </v-avatar>
+            </template>
+          </v-tooltip>
+          <template v-else>
+            <v-avatar color="primary" size="36">
+              <span class="text-body-2 font-weight-bold">{{ initials }}</span>
+            </v-avatar>
+            <div class="ml-3 flex-grow-1 text-truncate">
+              <div class="text-body-2 font-weight-medium text-truncate">{{ authStore.fullName }}</div>
+            </div>
+            <v-tooltip text="로그아웃">
+              <template #activator="{ props: tooltipProps }">
+                <v-btn v-bind="tooltipProps" icon size="small" variant="text" @click="logout">
+                  <v-icon>mdi-logout</v-icon>
+                </v-btn>
+              </template>
+            </v-tooltip>
+          </template>
+        </div>
+      </template>
     </v-navigation-drawer>
 
     <v-main>
