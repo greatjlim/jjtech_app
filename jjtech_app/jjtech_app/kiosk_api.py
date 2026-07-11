@@ -5,7 +5,7 @@ import frappe
 from frappe import _
 from frappe.utils import now_datetime
 
-STAGE_ORDER = ["압출작업", "절단작업"]
+STAGE_ORDER = ["절단작업"]
 
 
 def _is_fully_cycled(work_order):
@@ -75,13 +75,13 @@ def get_machine_status(workstation):
 			reasons[stage] = "이미 완료됨"
 			continue
 		if idx == 0:
-			checked_out = frappe.db.exists("Mold Preheat Job", {"work_order": wo.name, "zone": LOAN_ZONE})
-			if checked_out:
+			extrusion_done = frappe.db.exists("Extrusion Job", {"work_order": wo.name, "status": "완료"})
+			if extrusion_done:
 				available[stage] = True
 				reasons[stage] = ""
 			else:
 				available[stage] = False
-				reasons[stage] = "대출된 금형 없음"
+				reasons[stage] = "압출작업 완료 후 가능"
 		else:
 			prior = STAGE_ORDER[idx - 1]
 			if prior in completed:

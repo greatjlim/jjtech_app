@@ -38,7 +38,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "공정종류",
-   "options": "압출작업\n절단작업",
+   "options": "절단작업",
    "reqd": 1
   },
   {
