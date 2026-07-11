@@ -1,0 +1,102 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-07-11 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "shipment_date",
+  "vehicle_no",
+  "vehicle_type",
+  "freight_cost",
+  "dispatch_location",
+  "remark",
+  "items",
+  "total_ship_weight"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "SHIP-.YYYY.-.#####"
+  },
+  {
+   "default": "Today",
+   "fieldname": "shipment_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "출고일자",
+   "reqd": 1
+  },
+  {
+   "fieldname": "vehicle_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "차량번호"
+  },
+  {
+   "fieldname": "vehicle_type",
+   "fieldtype": "Data",
+   "label": "차량구분"
+  },
+  {
+   "fieldname": "freight_cost",
+   "fieldtype": "Currency",
+   "label": "운반비"
+  },
+  {
+   "fieldname": "dispatch_location",
+   "fieldtype": "Data",
+   "label": "출하지"
+  },
+  {
+   "fieldname": "remark",
+   "fieldtype": "Data",
+   "label": "비고"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "출고상세",
+   "options": "Shipment Item"
+  },
+  {
+   "fieldname": "total_ship_weight",
+   "fieldtype": "Float",
+   "label": "총출고중량",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "module": "Jjtech App",
+ "name": "Shipment",
+ "naming_rule": "By \"Naming Series\" field",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "naming_series",
+ "track_changes": 1
+}

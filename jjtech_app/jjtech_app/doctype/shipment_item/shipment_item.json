@@ -1,0 +1,140 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-07-11 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "item_name",
+  "customer",
+  "customer_name",
+  "mold_model",
+  "spec",
+  "color",
+  "material",
+  "heat_treatment",
+  "sales_order",
+  "sales_order_item",
+  "packaging",
+  "order_qty",
+  "ship_qty",
+  "ship_weight",
+  "delivery_note",
+  "delivery_note_item"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "품목",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "품명"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "거래처",
+   "options": "Customer",
+   "reqd": 1
+  },
+  {
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "거래처명"
+  },
+  {
+   "fieldname": "mold_model",
+   "fieldtype": "Link",
+   "label": "형번",
+   "options": "Mold Model"
+  },
+  {
+   "fieldname": "spec",
+   "fieldtype": "Data",
+   "label": "규격"
+  },
+  {
+   "fieldname": "color",
+   "fieldtype": "Data",
+   "label": "색상"
+  },
+  {
+   "fieldname": "material",
+   "fieldtype": "Data",
+   "label": "재질"
+  },
+  {
+   "fieldname": "heat_treatment",
+   "fieldtype": "Data",
+   "label": "열처리방법"
+  },
+  {
+   "fieldname": "sales_order",
+   "fieldtype": "Link",
+   "label": "수주번호",
+   "options": "Sales Order"
+  },
+  {
+   "fieldname": "sales_order_item",
+   "fieldtype": "Data",
+   "label": "수주상세행"
+  },
+  {
+   "fieldname": "packaging",
+   "fieldtype": "Link",
+   "label": "포장번호",
+   "options": "Packaging"
+  },
+  {
+   "fieldname": "order_qty",
+   "fieldtype": "Float",
+   "label": "주문수량",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ship_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "출고수량",
+   "reqd": 1
+  },
+  {
+   "fieldname": "ship_weight",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "출고중량"
+  },
+  {
+   "fieldname": "delivery_note",
+   "fieldtype": "Link",
+   "label": "출고전표",
+   "options": "Delivery Note",
+   "read_only": 1
+  },
+  {
+   "fieldname": "delivery_note_item",
+   "fieldtype": "Data",
+   "label": "출고전표행",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "module": "Jjtech App",
+ "name": "Shipment Item",
+ "naming_rule": "Random",
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}
