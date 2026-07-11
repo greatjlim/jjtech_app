@@ -572,3 +572,129 @@ def register_cutting(work_order, workstation, pallets):
 
 	frappe.db.commit()
 	return {"cutting_lots": created, "process_log": process_log_name, "total_qty": total_qty}
+
+
+# 포장등록 (절단파렛트 단위, 부분포장 누적)
+
+
+def _packaging_progress(cutting_lot):
+	packed = frappe.db.sql("select sum(pack_qty) from `tabPackaging` where cutting_lot=%s", (cutting_lot,))[0][0] or 0
+	bad = frappe.db.sql("select sum(bad_qty) from `tabPackaging` where cutting_lot=%s", (cutting_lot,))[0][0] or 0
+	return packed, bad
+
+
+@frappe.whitelist()
+def list_packaging_queue(workstation):
+	lots = frappe.get_all(
+		"Cutting Lot",
+		filters={"workstation": workstation, "status": "정상"},
+		fields=["name", "work_order", "pallet_no", "cut_length", "cut_qty"],
+		order_by="creation asc",
+	)
+
+	work_orders = {lot.work_order for lot in lots}
+	wo_info = {}
+	if work_orders:
+		for wo in frappe.get_all(
+			"Work Order",
+			filters={"name": ["in", list(work_orders)]},
+			fields=["name", "custom_mold", "sales_order", "sales_order_item"],
+		):
+			wo_info[wo.name] = wo
+
+	sales_orders = {w.sales_order for w in wo_info.values() if w.sales_order}
+	customer_names = {}
+	if sales_orders:
+		for so in frappe.get_all("Sales Order", filters={"name": ["in", list(sales_orders)]}, fields=["name", "customer_name"]):
+			customer_names[so.name] = so.customer_name
+
+	line_names = {w.sales_order_item for w in wo_info.values() if w.sales_order_item}
+	line_info = {}
+	if line_names:
+		for line in frappe.get_all(
+			"Sales Order Item",
+			filters={"name": ["in", list(line_names)]},
+			fields=["name", "custom_order_spec", "custom_color", "custom_material", "custom_heat_treatment"],
+		):
+			line_info[line.name] = line
+
+	result = []
+	for lot in lots:
+		wo = wo_info.get(lot.work_order) or {}
+		line = line_info.get(wo.get("sales_order_item"), {}) if wo else {}
+		packed_so_far, bad_so_far = _packaging_progress(lot.name)
+		remaining = lot.cut_qty - packed_so_far - bad_so_far
+		if remaining <= 0:
+			continue
+		result.append(
+			{
+				"cutting_lot": lot.name,
+				"work_order": lot.work_order,
+				"pallet_no": lot.pallet_no,
+				"mold_model": wo.get("custom_mold"),
+				"customer_name": customer_names.get(wo.get("sales_order")),
+				"spec": line.get("custom_order_spec"),
+				"color": line.get("custom_color"),
+				"material": line.get("custom_material"),
+				"heat_treatment": line.get("custom_heat_treatment"),
+				"cut_length": lot.cut_length,
+				"cut_qty": lot.cut_qty,
+				"packed_so_far": packed_so_far,
+				"remaining": remaining,
+			}
+		)
+	return result
+
+
+@frappe.whitelist()
+def register_packaging(cutting_lot, work_order, workstation, pack_qty, shift, bad_qty=0, bad_code=None, job_time=None, remark=None):
+	doc = frappe.get_doc(
+		{
+			"doctype": "Packaging",
+			"cutting_lot": cutting_lot,
+			"work_order": work_order,
+			"workstation": workstation,
+			"pack_qty": pack_qty,
+			"bad_qty": bad_qty or 0,
+			"bad_code": bad_code,
+			"shift": shift,
+			"job_time": job_time or "10분",
+			"remark": remark,
+		}
+	)
+	doc.insert(ignore_permissions=True)
+	frappe.db.commit()
+	return doc.as_dict()
+
+
+@frappe.whitelist()
+def list_packaging_history(workstation, date):
+	rows = frappe.get_all(
+		"Packaging",
+		filters={"workstation": workstation, "creation": ["between", [f"{date} 00:00:00", f"{date} 23:59:59"]]},
+		fields=["name", "work_order", "cutting_lot", "pack_qty", "bad_qty", "bad_code", "creation"],
+		order_by="creation desc",
+	)
+
+	cutting_lots = {row.cutting_lot for row in rows}
+	lot_pallet = {}
+	if cutting_lots:
+		for lot in frappe.get_all("Cutting Lot", filters={"name": ["in", list(cutting_lots)]}, fields=["name", "pallet_no"]):
+			lot_pallet[lot.name] = lot.pallet_no
+
+	work_orders = {row.work_order for row in rows}
+	wo_mold = {}
+	if work_orders:
+		for wo in frappe.get_all("Work Order", filters={"name": ["in", list(work_orders)]}, fields=["name", "custom_mold"]):
+			wo_mold[wo.name] = wo.custom_mold
+
+	for row in rows:
+		row["pallet_no"] = lot_pallet.get(row.cutting_lot)
+		row["mold_model"] = wo_mold.get(row.work_order)
+	return rows
+
+
+@frappe.whitelist()
+def delete_packaging(name):
+	frappe.delete_doc("Packaging", name, ignore_permissions=True)
+	frappe.db.commit()
