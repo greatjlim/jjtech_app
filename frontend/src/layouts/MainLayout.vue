@@ -37,6 +37,7 @@ const logout = async () => {
         <v-list-item to="/molds" prepend-icon="mdi-hammer-wrench" title="금형관리" />
         <v-list-item to="/sales-orders" prepend-icon="mdi-clipboard-text" title="주문관리" />
         <v-list-item to="/work-orders" prepend-icon="mdi-factory" title="작업지시" />
+        <v-list-item to="/shipments" prepend-icon="mdi-truck-delivery" title="출고관리" />
       </v-list>
     </v-navigation-drawer>
 
