@@ -432,6 +432,26 @@ def complete_extrusion(
 
 
 @frappe.whitelist()
+def start_cutting(work_order, workstation):
+	# 절단작업은 호기 하나에 여러 작업지시가 동시에 대기열로 뜨므로, 압출작업과 마찬가지로
+	# workstation의 FIFO 작업지시를 고르는 generic start_process를 쓰지 않고 화면에서 고른
+	# work_order를 명시적으로 받는다.
+	doc = frappe.get_doc(
+		{
+			"doctype": "Process Log",
+			"work_order": work_order,
+			"process_type": "절단작업",
+			"workstation": workstation,
+			"start_time": now_datetime(),
+			"status": "진행중",
+		}
+	)
+	doc.insert(ignore_permissions=True)
+	frappe.db.commit()
+	return doc.as_dict()
+
+
+@frappe.whitelist()
 def list_cutting_queue(workstation):
 	rows = frappe.get_all(
 		"Work Order",
