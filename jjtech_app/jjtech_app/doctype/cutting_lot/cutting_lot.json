@@ -1,0 +1,131 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "work_order",
+  "workstation",
+  "extrusion_job",
+  "pallet_no",
+  "cut_length",
+  "cut_qty",
+  "cut_weight",
+  "sample_length",
+  "sample_weight",
+  "status"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "CUTLOT-.YYYY.-.#####"
+  },
+  {
+   "fieldname": "work_order",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "작업지시",
+   "options": "Work Order",
+   "reqd": 1
+  },
+  {
+   "fieldname": "workstation",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "호기",
+   "options": "Workstation",
+   "reqd": 1
+  },
+  {
+   "fieldname": "extrusion_job",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "압출작업",
+   "options": "Extrusion Job",
+   "reqd": 1
+  },
+  {
+   "fieldname": "pallet_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "파렛트번호",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cut_length",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "절단길이",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cut_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "절단수량",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cut_weight",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "절단중량",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sample_length",
+   "fieldtype": "Float",
+   "label": "SAMPLE길이"
+  },
+  {
+   "fieldname": "sample_weight",
+   "fieldtype": "Float",
+   "label": "SAMPLE중량"
+  },
+  {
+   "default": "정상",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "상태",
+   "options": "정상\n폐기"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "module": "Jjtech App",
+ "name": "Cutting Lot",
+ "naming_rule": "By \"Naming Series\" field",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "role": "Kiosk Worker",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "work_order",
+ "track_changes": 1
+}
