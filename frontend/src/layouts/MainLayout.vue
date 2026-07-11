@@ -77,30 +77,42 @@ const goHome = () => {
       <v-list nav>
         <v-list-item to="/dashboard" prepend-icon="mdi-view-dashboard" title="대시보드" />
 
-        <v-list-subheader v-if="!rail">기준정보</v-list-subheader>
-        <v-divider v-else class="my-2" />
-        <v-list-item to="/companies" prepend-icon="mdi-domain" title="회사 관리" />
-        <v-list-item to="/customers" prepend-icon="mdi-account-group" title="거래처 관리" />
-        <v-list-item to="/suppliers" prepend-icon="mdi-account-hard-hat" title="공급업체관리" />
-        <v-list-item to="/items" prepend-icon="mdi-cube-outline" title="물품관리" />
-        <v-list-item to="/molds" prepend-icon="mdi-hammer-wrench" title="금형관리" />
+        <v-list-group value="기준정보">
+          <template #activator="{ props: activatorProps }">
+            <v-list-item v-bind="activatorProps" prepend-icon="mdi-folder-outline" title="기준정보" />
+          </template>
+          <v-list-item to="/companies" prepend-icon="mdi-domain" title="회사 관리" />
+          <v-list-item to="/customers" prepend-icon="mdi-account-group" title="거래처 관리" />
+          <v-list-item to="/suppliers" prepend-icon="mdi-account-hard-hat" title="공급업체관리" />
+          <v-list-item to="/items" prepend-icon="mdi-cube-outline" title="물품관리" />
+          <v-list-item to="/molds" prepend-icon="mdi-hammer-wrench" title="금형관리" />
+        </v-list-group>
 
-        <v-list-subheader v-if="!rail">영업</v-list-subheader>
-        <v-divider v-else class="my-2" />
-        <v-list-item to="/sales-orders" prepend-icon="mdi-clipboard-text" title="주문관리" />
-        <v-list-item to="/shipments" prepend-icon="mdi-truck-delivery" title="출고관리" />
+        <v-list-group value="영업">
+          <template #activator="{ props: activatorProps }">
+            <v-list-item v-bind="activatorProps" prepend-icon="mdi-briefcase-outline" title="영업" />
+          </template>
+          <v-list-item to="/sales-orders" prepend-icon="mdi-clipboard-text" title="주문관리" />
+          <v-list-item to="/shipments" prepend-icon="mdi-truck-delivery" title="출고관리" />
+        </v-list-group>
 
-        <v-list-subheader v-if="!rail">생산</v-list-subheader>
-        <v-divider v-else class="my-2" />
-        <v-list-item to="/work-orders" prepend-icon="mdi-factory" title="작업지시" />
+        <v-list-group value="생산">
+          <template #activator="{ props: activatorProps }">
+            <v-list-item v-bind="activatorProps" prepend-icon="mdi-cog-outline" title="생산" />
+          </template>
+          <v-list-item to="/work-orders" prepend-icon="mdi-factory" title="작업지시" />
+        </v-list-group>
 
-        <v-list-subheader v-if="!rail">재고</v-list-subheader>
-        <v-divider v-else class="my-2" />
-        <v-list-item to="/purchase-orders" prepend-icon="mdi-cart-arrow-down" title="발주관리" />
-        <v-list-item to="/purchase-receipts" prepend-icon="mdi-package-variant-closed" title="입고관리" />
-        <v-list-item to="/stock" prepend-icon="mdi-warehouse" title="재고관리" />
+        <v-list-group value="재고">
+          <template #activator="{ props: activatorProps }">
+            <v-list-item v-bind="activatorProps" prepend-icon="mdi-warehouse" title="재고" />
+          </template>
+          <v-list-item to="/purchase-orders" prepend-icon="mdi-cart-arrow-down" title="발주관리" />
+          <v-list-item to="/purchase-receipts" prepend-icon="mdi-package-variant-closed" title="입고관리" />
+          <v-list-item to="/stock" prepend-icon="mdi-warehouse" title="재고관리" />
+        </v-list-group>
 
-        <!-- 설정: 화면 추가되면 여기에 v-list-subheader "설정" + 항목들 추가 -->
+        <!-- 설정: 화면 추가되면 여기에 v-list-group "설정" 추가 -->
       </v-list>
 
       <template #append>
