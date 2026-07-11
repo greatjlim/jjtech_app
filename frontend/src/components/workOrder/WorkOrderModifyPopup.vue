@@ -52,6 +52,6 @@ const save = async () => {
 
 <template>
   <FormDialog v-model="show" title="작업지시" :loading="loading || saving" :hide-save="isReadonly" @save="save">
-    <WorkOrderFormFields v-model="form" :readonly="isReadonly" />
+    <WorkOrderFormFields v-model="form" :readonly="isReadonly" :current-name="props.name" />
   </FormDialog>
 </template>

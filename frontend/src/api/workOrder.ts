@@ -9,6 +9,7 @@ const LIST_FIELDS = [
   'qty',
   'custom_workstation',
   'custom_mold',
+  'sales_order',
   'planned_start_date',
   'expected_delivery_date',
   'status',
@@ -22,6 +23,7 @@ export interface WorkOrderListItem {
   qty: number
   custom_workstation: string | null
   custom_mold: string | null
+  sales_order: string | null
   planned_start_date: string | null
   expected_delivery_date: string | null
   status: string
@@ -84,6 +86,8 @@ export interface WorkOrderDoc {
   qty: number
   custom_workstation: string
   custom_mold: string | null
+  sales_order: string | null
+  sales_order_item: string | null
   planned_start_date: string
   expected_delivery_date: string | null
   status: string
@@ -101,6 +105,8 @@ export async function getWorkOrder(name: string): Promise<WorkOrderDoc> {
 }
 
 export interface WorkOrderFormState {
+  sales_order: string
+  sales_order_item: string
   production_item: string
   qty: number
   custom_workstation: string
@@ -111,6 +117,8 @@ export interface WorkOrderFormState {
 
 export function emptyWorkOrderForm(): WorkOrderFormState {
   return {
+    sales_order: '',
+    sales_order_item: '',
     production_item: '',
     qty: 1,
     custom_workstation: '',
@@ -122,6 +130,8 @@ export function emptyWorkOrderForm(): WorkOrderFormState {
 
 export function workOrderDocToForm(doc: WorkOrderDoc): WorkOrderFormState {
   return {
+    sales_order: doc.sales_order ?? '',
+    sales_order_item: doc.sales_order_item ?? '',
     production_item: doc.production_item,
     qty: doc.qty,
     custom_workstation: doc.custom_workstation,
@@ -141,6 +151,8 @@ const ITEM_BOM_MAP: Record<string, string> = {
 }
 
 export interface WorkOrderCreatePayload {
+  sales_order?: string
+  sales_order_item?: string
   production_item: string
   qty: number
   company: string
@@ -155,6 +167,8 @@ export interface WorkOrderCreatePayload {
 
 export function formToCreatePayload(form: WorkOrderFormState): WorkOrderCreatePayload {
   return {
+    sales_order: form.sales_order || undefined,
+    sales_order_item: form.sales_order_item || undefined,
     production_item: form.production_item,
     qty: form.qty,
     company: 'JJtech',
@@ -218,4 +232,50 @@ export async function listWorkstations(): Promise<string[]> {
     `/resource/Workstation?fields=${encodeURIComponent('["name"]')}&limit_page_length=0`,
   )
   return res.data.map((row) => row.name)
+}
+
+export interface SalesOrderOption {
+  name: string
+  customer_name: string
+  delivery_date: string | null
+}
+
+// 작업지시는 반드시 확정(제출)된 수주에서 나와야 하므로 docstatus=1, 마감/취소된
+// 수주는 제외한다. 여러 작업지시가 같은 수주의 다른 라인을 나눠 가져갈 수 있어서
+// 여기서는 수주 헤더만 고르고, 라인(품목) 선택은 listSalesOrderItems로 별도 조회한다.
+export async function searchOpenSalesOrders(search = '', limit = 50): Promise<SalesOrderOption[]> {
+  const filters: unknown[] = [
+    ['docstatus', '=', 1],
+    ['status', 'not in', ['Closed', 'Cancelled']],
+  ]
+  if (search) filters.push(['name', 'like', `%${search}%`])
+  const params = new URLSearchParams({
+    fields: JSON.stringify(['name', 'customer_name', 'delivery_date']),
+    filters: JSON.stringify(filters),
+    limit_page_length: String(limit),
+    order_by: 'transaction_date desc',
+  })
+  const res = await apiGet<ListResponse<SalesOrderOption>>(`/resource/Sales%20Order?${params.toString()}`)
+  return res.data
+}
+
+// 이미 이 수주 라인 품목으로 제출된 작업지시 수량 합계. 서버(Work Order.validate_work_order_against_so)가
+// 최종 검증을 하지만, 화면에서 잔여수량을 미리 보여주기 위해 같은 방식으로 계산한다.
+export async function getWorkOrderedQty(salesOrder: string, itemCode: string, excludeName?: string): Promise<number> {
+  const filters: unknown[] = [
+    ['sales_order', '=', salesOrder],
+    ['production_item', '=', itemCode],
+    ['docstatus', '=', 1],
+    ['status', '!=', 'Closed'],
+  ]
+  if (excludeName) filters.push(['name', '!=', excludeName])
+  const params = new URLSearchParams({
+    fields: JSON.stringify(['qty', 'process_loss_qty']),
+    filters: JSON.stringify(filters),
+    limit_page_length: '0',
+  })
+  const res = await apiGet<ListResponse<{ qty: number; process_loss_qty: number }>>(
+    `/resource/${encodeURIComponent(DOCTYPE)}?${params.toString()}`,
+  )
+  return res.data.reduce((sum, row) => sum + (row.qty - (row.process_loss_qty || 0)), 0)
 }

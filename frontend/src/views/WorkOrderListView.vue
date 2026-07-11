@@ -112,6 +112,7 @@ const deleteOrder = async (name: string) => {
 
 const columnDefs: ColDef<WorkOrderListItem>[] = [
   { headerName: '작업지시번호', field: 'name', width: 160 },
+  { headerName: '수주번호', field: 'sales_order', width: 160 },
   { headerName: '품목', field: 'item_name', width: 200 },
   { headerName: '수량', field: 'qty', width: 100 },
   { headerName: '호기', field: 'custom_workstation', width: 100 },
