@@ -39,7 +39,3 @@ export async function getItemGroupAncestors(name: string): Promise<ItemGroupNode
   }
   return path
 }
-
-export function itemGroupPathLabel(path: ItemGroupNode[]): string {
-  return path.map((node) => node.item_group_name).join(' > ')
-}
