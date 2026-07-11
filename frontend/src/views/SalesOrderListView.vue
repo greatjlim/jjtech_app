@@ -14,18 +14,38 @@ import {
   type ValueFormatterParams,
 } from 'ag-grid-community'
 import {
+  cancelSalesOrder,
+  deleteSalesOrder,
   getSalesOrderFieldOptions,
   listSalesOrderItems,
   listSalesOrders,
+  submitSalesOrder,
   STATUS_LABELS,
   type SalesOrderItemListItem,
   type SalesOrderListItem,
 } from '@/api/salesOrder'
+import { ApiError } from '@/api/client'
 import SalesOrderRowActions from '@/components/salesOrder/SalesOrderRowActions.vue'
 import SalesOrderModifyPopup from '@/components/salesOrder/SalesOrderModifyPopup.vue'
 import SalesOrderRegisterPopup from '@/components/salesOrder/SalesOrderRegisterPopup.vue'
 
 ModuleRegistry.registerModules([AllCommunityModule])
+
+const snackbar = ref(false)
+const snackbarText = ref('')
+const snackbarColor = ref<'success' | 'error'>('success')
+
+const notifySuccess = (message: string) => {
+  snackbarColor.value = 'success'
+  snackbarText.value = message
+  snackbar.value = true
+}
+
+const notifyError = (message: string) => {
+  snackbarColor.value = 'error'
+  snackbarText.value = message
+  snackbar.value = true
+}
 
 // 조회조건
 const status = ref('all')
@@ -57,7 +77,42 @@ const editOrder = (name: string) => {
 }
 
 const onSaved = () => {
+  notifySuccess('저장되었습니다.')
   refreshOrderGrid()
+}
+
+const submitOrder = async (name: string) => {
+  if (!window.confirm('이 수주를 제출하시겠습니까? 제출 후에는 수정할 수 없습니다.')) return
+  try {
+    await submitSalesOrder(name)
+    notifySuccess('제출되었습니다.')
+    refreshOrderGrid()
+  } catch (e) {
+    notifyError(e instanceof ApiError ? e.message : '제출에 실패했습니다.')
+  }
+}
+
+const cancelOrder = async (name: string) => {
+  if (!window.confirm('제출을 취소하시겠습니까?')) return
+  try {
+    await cancelSalesOrder(name)
+    notifySuccess('제출이 취소되었습니다.')
+    refreshOrderGrid()
+  } catch (e) {
+    notifyError(e instanceof ApiError ? e.message : '제출취소에 실패했습니다.')
+  }
+}
+
+const deleteOrder = async (name: string) => {
+  if (!window.confirm('수주 정보를 삭제하시겠습니까?')) return
+  try {
+    await deleteSalesOrder(name)
+    notifySuccess('삭제되었습니다.')
+    if (selectedOrderName.value === name) selectedOrderName.value = ''
+    refreshOrderGrid()
+  } catch (e) {
+    notifyError(e instanceof ApiError ? e.message : '삭제에 실패했습니다.')
+  }
 }
 
 const orderColumnDefs: ColDef<SalesOrderListItem>[] = [
@@ -85,7 +140,7 @@ const orderColumnDefs: ColDef<SalesOrderListItem>[] = [
     headerName: '실행',
     sortable: false,
     cellRenderer: SalesOrderRowActions,
-    cellRendererParams: { onEdit: editOrder },
+    cellRendererParams: { onEdit: editOrder, onSubmit: submitOrder, onCancel: cancelOrder, onDelete: deleteOrder },
     width: 100,
   },
 ]
@@ -305,6 +360,10 @@ const defaultColDef = { cellClass: ['d-flex', 'align-center'] }
     </v-card-text>
   </v-card>
 
-  <SalesOrderModifyPopup v-model="showModify" :name="editingName" @saved="onSaved" />
-  <SalesOrderRegisterPopup v-model="showRegister" @saved="onSaved" />
+  <SalesOrderModifyPopup v-model="showModify" :name="editingName" @saved="onSaved" @error="notifyError" />
+  <SalesOrderRegisterPopup v-model="showRegister" @saved="onSaved" @error="notifyError" />
+
+  <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="4000">
+    {{ snackbarText }}
+  </v-snackbar>
 </template>

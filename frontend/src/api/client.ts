@@ -11,6 +11,49 @@ export class ApiError extends Error {
   }
 }
 
+function stripHtml(text: string): string {
+  return text.replace(/<[^>]*>/g, '').trim()
+}
+
+// Frappe의 에러 응답은 doctype/엔드포인트에 따라 형태가 제각각이다:
+// - {"message": "..."} 형태로 바로 오는 경우 (로그인 등)
+// - {"_server_messages": "[\"{\\\"message\\\":\\\"...\\\"}\"]"} 처럼 문자열 안에
+//   JSON 배열이, 그 배열 안에 다시 JSON 객체 문자열이 들어있는 이중 인코딩 (Sales Order 등
+//   frappe.throw를 쓰는 대부분의 서버 검증 오류)
+// - {"exception": "frappe.exceptions.ValidationError: 실제 메시지"} 형태
+// 세 가지를 순서대로 시도해서 사람이 읽을 수 있는 메시지를 뽑아낸다.
+function parseServerMessages(raw: unknown): string | undefined {
+  if (typeof raw !== 'string') return undefined
+  try {
+    const arr = JSON.parse(raw)
+    if (Array.isArray(arr) && arr.length > 0 && typeof arr[0] === 'string') {
+      try {
+        const obj = JSON.parse(arr[0])
+        if (obj && typeof obj.message === 'string') return obj.message
+      } catch {
+        return arr[0]
+      }
+    }
+  } catch {
+    return undefined
+  }
+  return undefined
+}
+
+function parseErrorMessage(data: any, fallback: string): string {
+  if (typeof data?.message === 'string' && data.message) {
+    return stripHtml(data.message)
+  }
+  const fromServerMessages = parseServerMessages(data?._server_messages)
+  if (fromServerMessages) {
+    return stripHtml(fromServerMessages)
+  }
+  if (typeof data?.exception === 'string' && data.exception) {
+    return stripHtml(data.exception.replace(/^[\w.]+(Error|Exception):\s*/, ''))
+  }
+  return fallback
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     credentials: 'include',
@@ -25,11 +68,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const data = contentType.includes('application/json') ? await res.json() : undefined
 
   if (!res.ok) {
-    const message =
-      (typeof data?.message === 'string' && data.message) ||
-      (Array.isArray(data?._server_messages) && data._server_messages[0]) ||
-      res.statusText
-    throw new ApiError(message, res.status, data)
+    throw new ApiError(parseErrorMessage(data, res.statusText), res.status, data)
   }
 
   return data as T

@@ -2,14 +2,24 @@
 import { computed, reactive, ref, watch } from 'vue'
 import FormDialog from '@/components/FormDialog.vue'
 import SalesOrderFormFields from './SalesOrderFormFields.vue'
-import { emptySalesOrderForm, getSalesOrder, listSalesOrderItems, salesOrderDocToForm } from '@/api/salesOrder'
+import {
+  emptySalesOrderForm,
+  formToCreatePayload,
+  getSalesOrder,
+  listSalesOrderItems,
+  salesOrderDocToForm,
+  updateSalesOrder,
+} from '@/api/salesOrder'
+import { ApiError } from '@/api/client'
 
 const props = defineProps<{
   name: string
 }>()
 const show = defineModel<boolean>({ default: false })
+const emit = defineEmits<{ saved: []; error: [message: string] }>()
 
 const loading = ref(false)
+const saving = ref(false)
 const docstatus = ref<0 | 1 | 2>(0)
 const form = reactive(emptySalesOrderForm())
 
@@ -34,14 +44,22 @@ watch(show, (newShow) => {
   }
 })
 
-const save = () => {
-  // 저장 API 연결은 다음 단계에서 진행
-  show.value = false
+const save = async () => {
+  saving.value = true
+  try {
+    await updateSalesOrder(props.name, formToCreatePayload(form))
+    show.value = false
+    emit('saved')
+  } catch (e) {
+    emit('error', e instanceof ApiError ? e.message : '저장에 실패했습니다.')
+  } finally {
+    saving.value = false
+  }
 }
 </script>
 
 <template>
-  <FormDialog v-model="show" title="수주관리" :loading="loading" :hide-save="isReadonly" @save="save">
+  <FormDialog v-model="show" title="수주관리" :loading="loading || saving" :hide-save="isReadonly" @save="save">
     <SalesOrderFormFields v-model="form" :readonly="isReadonly" />
   </FormDialog>
 </template>

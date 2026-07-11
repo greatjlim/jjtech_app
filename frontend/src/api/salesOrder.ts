@@ -1,4 +1,4 @@
-import { apiGet } from './client'
+import { apiDelete, apiGet, apiPost, apiPut } from './client'
 
 const DOCTYPE = 'Sales Order'
 const ITEM_DOCTYPE = 'Sales Order Item'
@@ -230,6 +230,84 @@ export function salesOrderDocToForm(doc: SalesOrderDoc, items: SalesOrderItemLis
       custom_order_weight: item.custom_order_weight ?? 0,
     })),
   }
+}
+
+export interface SalesOrderLineInput {
+  item_code: string
+  qty: number
+  rate: number
+  custom_mold?: string
+  custom_order_spec?: string
+  custom_order_weight?: number
+}
+
+export interface SalesOrderCreatePayload {
+  customer: string
+  company: string
+  currency: string
+  order_type: string
+  transaction_date: string
+  delivery_date: string
+  custom_site_company_name?: string
+  custom_delivery_address?: string
+  custom_delivery_address_detail?: string
+  custom_remark?: string
+  items: SalesOrderLineInput[]
+}
+
+// company/currency/order_type은 화면에 노출하지 않고 항상 이 값으로 고정 전송한다
+// (회사관리에서 만든 "JJtech", 그 기본통화 KRW, ERPNext가 요구하는 필수 Select 기본값 "Sales").
+export function formToCreatePayload(form: SalesOrderFormState): SalesOrderCreatePayload {
+  return {
+    customer: form.customer,
+    company: 'JJtech',
+    currency: 'KRW',
+    order_type: 'Sales',
+    transaction_date: form.transaction_date,
+    delivery_date: form.delivery_date,
+    custom_site_company_name: form.custom_site_company_name || undefined,
+    custom_delivery_address: form.custom_delivery_address || undefined,
+    custom_delivery_address_detail: form.custom_delivery_address_detail || undefined,
+    custom_remark: form.custom_remark || undefined,
+    items: form.items.map((line) => ({
+      item_code: line.item_code,
+      qty: line.qty,
+      rate: line.rate,
+      custom_mold: line.custom_mold || undefined,
+      custom_order_spec: line.custom_order_spec || undefined,
+      custom_order_weight: line.custom_order_weight || undefined,
+    })),
+  }
+}
+
+export async function createSalesOrder(patch: SalesOrderCreatePayload): Promise<SalesOrderDoc> {
+  const res = await apiPost<DocResponse<SalesOrderDoc>>(`/resource/${encodeURIComponent(DOCTYPE)}`, patch)
+  return res.data
+}
+
+export type SalesOrderUpdatePayload = Partial<SalesOrderCreatePayload>
+
+export async function updateSalesOrder(name: string, patch: SalesOrderUpdatePayload): Promise<SalesOrderDoc> {
+  const res = await apiPut<DocResponse<SalesOrderDoc>>(`/resource/${encodeURIComponent(DOCTYPE)}/${encodeURIComponent(name)}`, patch)
+  return res.data
+}
+
+export async function submitSalesOrder(name: string): Promise<SalesOrderDoc> {
+  const res = await apiPut<DocResponse<SalesOrderDoc>>(`/resource/${encodeURIComponent(DOCTYPE)}/${encodeURIComponent(name)}`, {
+    docstatus: 1,
+  })
+  return res.data
+}
+
+export async function cancelSalesOrder(name: string): Promise<SalesOrderDoc> {
+  const res = await apiPut<DocResponse<SalesOrderDoc>>(`/resource/${encodeURIComponent(DOCTYPE)}/${encodeURIComponent(name)}`, {
+    docstatus: 2,
+  })
+  return res.data
+}
+
+export async function deleteSalesOrder(name: string): Promise<void> {
+  await apiDelete(`/resource/${encodeURIComponent(DOCTYPE)}/${encodeURIComponent(name)}`)
 }
 
 export const STATUS_LABELS: Record<string, string> = {
