@@ -60,6 +60,18 @@ const router = createRouter({
         },
       ],
     },
+    {
+      path: '/kiosk',
+      component: () => import('@/layouts/KioskLayout.vue'),
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: '',
+          name: 'kiosk-home',
+          component: () => import('@/views/kiosk/KioskHomeView.vue'),
+        },
+      ],
+    },
   ],
 })
 
