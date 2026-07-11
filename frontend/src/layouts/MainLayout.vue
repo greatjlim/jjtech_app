@@ -1,10 +1,38 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { useTheme } from 'vuetify'
 import { useRouter } from 'vue-router'
 import { authStore, authActions } from '@/stores/auth'
+import { getMyTheme, setMyTheme } from '@/api/theme'
+import { THEME_DARK, THEME_LIGHT } from '@/plugins/vuetify'
 
 const router = useRouter()
 const drawer = ref(true)
+const theme = useTheme()
+const isDark = ref(false)
+
+onMounted(async () => {
+  if (!authStore.user) return
+  try {
+    const deskTheme = await getMyTheme(authStore.user)
+    isDark.value = deskTheme === 'Dark'
+    theme.global.name.value = isDark.value ? THEME_DARK : THEME_LIGHT
+  } catch {
+    // 조회 실패 시 기본 라이트 테마 유지
+  }
+})
+
+const toggleTheme = async () => {
+  isDark.value = !isDark.value
+  theme.global.name.value = isDark.value ? THEME_DARK : THEME_LIGHT
+  if (authStore.user) {
+    try {
+      await setMyTheme(authStore.user, isDark.value ? 'Dark' : 'Light')
+    } catch {
+      // 저장 실패해도 화면 전환 자체는 유지
+    }
+  }
+}
 
 const logout = async () => {
   try {
@@ -21,6 +49,9 @@ const logout = async () => {
       <v-app-bar-nav-icon class="hidden-lg-and-up" @click="drawer = !drawer" />
       <div class="text-h6 font-weight-bold font-italic ml-2">JJTech</div>
       <v-spacer />
+      <v-btn icon variant="text" @click="toggleTheme">
+        <v-icon>{{ isDark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
+      </v-btn>
       <span class="text-body-2 mr-4">{{ authStore.fullName }}</span>
       <v-btn variant="text" @click="logout">
         <v-icon start>mdi-logout</v-icon>
