@@ -70,6 +70,11 @@ const router = createRouter({
           name: 'kiosk-home',
           component: () => import('@/views/kiosk/KioskHomeView.vue'),
         },
+        {
+          path: ':workstation',
+          name: 'kiosk-process-select',
+          component: () => import('@/views/kiosk/KioskProcessSelectView.vue'),
+        },
       ],
     },
   ],
