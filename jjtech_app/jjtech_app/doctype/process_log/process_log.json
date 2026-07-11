@@ -107,6 +107,12 @@
    "role": "System Manager",
    "share": 1,
    "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "role": "Kiosk Worker",
+   "write": 1
   }
  ],
  "sort_field": "creation",

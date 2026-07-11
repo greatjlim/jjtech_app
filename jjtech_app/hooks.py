@@ -28,6 +28,14 @@ fixtures = [
 		"doctype": "Server Script",
 		"filters": [["module", "=", "Jjtech App"]],
 	},
+	{
+		"doctype": "Role",
+		"filters": [["name", "=", "Kiosk Worker"]],
+	},
+	{
+		"doctype": "Custom DocPerm",
+		"filters": [["role", "=", "Kiosk Worker"]],
+	},
 ]
 
 # Apps
