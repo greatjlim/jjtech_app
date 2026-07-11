@@ -75,6 +75,11 @@ const router = createRouter({
           name: 'kiosk-process-select',
           component: () => import('@/views/kiosk/KioskProcessSelectView.vue'),
         },
+        {
+          path: ':workstation/:processType',
+          name: 'kiosk-progress',
+          component: () => import('@/views/kiosk/KioskProgressView.vue'),
+        },
       ],
     },
   ],
