@@ -81,6 +81,11 @@ const router = createRouter({
           component: () => import('@/views/kiosk/KioskPreheatBoardView.vue'),
         },
         {
+          path: ':workstation/extrusion/:mold',
+          name: 'kiosk-extrusion',
+          component: () => import('@/views/kiosk/KioskExtrusionView.vue'),
+        },
+        {
           path: ':workstation/:processType',
           name: 'kiosk-progress',
           component: () => import('@/views/kiosk/KioskProgressView.vue'),

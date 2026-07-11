@@ -99,6 +99,11 @@ const closeAction = () => {
   showZonePicker.value = false
 }
 
+const goToExtrusion = () => {
+  if (!actionJob.value) return
+  router.push(`/kiosk/${encodeURIComponent(workstation.value)}/extrusion/${encodeURIComponent(actionJob.value.mold)}`)
+}
+
 const doCheckout = async () => {
   if (!actionJob.value) return
   acting.value = true
@@ -252,6 +257,9 @@ const confirmRegister = async (zone: '1' | '2' | '3') => {
         <div class="text-body-1 mb-4">{{ actionJob.customer_name }} · {{ actionJob.work_order }}</div>
 
         <template v-if="!showZonePicker">
+          <v-btn block size="large" height="64" color="info" class="mb-2" :disabled="acting" @click="goToExtrusion">
+            압출작업
+          </v-btn>
           <v-btn
             v-if="actionPanel !== '0'"
             block
