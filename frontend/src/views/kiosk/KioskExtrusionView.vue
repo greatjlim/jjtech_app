@@ -64,6 +64,7 @@ const busy = ref(false)
 const selectRow = async (row: ExtrusionQueueItem) => {
   selectedRow.value = row
   currentJob.value = row.extrusion_status === '진행중' ? await getInProgressExtrusionJob(row.name) : null
+  cuts.value = emptyCuts()
 }
 
 const inProgress = computed(() => selectedRow.value?.extrusion_status === '진행중' || !!currentJob.value)
@@ -84,14 +85,15 @@ const doStart = async () => {
   }
 }
 
-const cuts = ref<CutPair[]>([
+const emptyCuts = (): CutPair[] => [
   { length: null, qty: null },
   { length: null, qty: null },
   { length: null, qty: null },
   { length: null, qty: null },
   { length: null, qty: null },
-])
-const extraCutRows = ref(1)
+]
+
+const cuts = ref<CutPair[]>(emptyCuts())
 
 const doComplete = async () => {
   if (!currentJob.value) return
@@ -101,14 +103,7 @@ const doComplete = async () => {
     notify('작업이 완료되었습니다.')
     currentJob.value = null
     selectedRow.value = null
-    cuts.value = [
-      { length: null, qty: null },
-      { length: null, qty: null },
-      { length: null, qty: null },
-      { length: null, qty: null },
-      { length: null, qty: null },
-    ]
-    extraCutRows.value = 1
+    cuts.value = emptyCuts()
     await refresh()
   } catch (e) {
     notify(e instanceof ApiError ? e.message : '작업완료에 실패했습니다.', 'error')
@@ -166,7 +161,10 @@ const doComplete = async () => {
 
           <v-divider class="mb-3" />
           <div class="text-body-2 mb-2">절단길이 / 절단수량</div>
-          <v-row v-for="i in extraCutRows" :key="i" dense>
+          <div v-if="!inProgress" class="text-caption text-medium-emphasis mb-2">
+            작업시작을 눌러야 입력할 수 있습니다.
+          </div>
+          <v-row v-for="i in 5" :key="i" dense>
             <v-col cols="6">
               <v-text-field
                 v-model.number="cuts[i - 1].length"
@@ -188,9 +186,6 @@ const doComplete = async () => {
               />
             </v-col>
           </v-row>
-          <v-btn v-if="inProgress && extraCutRows < 5" variant="text" color="primary" size="small" @click="extraCutRows++">
-            + 추가
-          </v-btn>
 
           <v-btn
             v-if="!inProgress && selectedRow.extrusion_status !== '완료'"
