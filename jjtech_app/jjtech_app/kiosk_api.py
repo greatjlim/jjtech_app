@@ -1,6 +1,8 @@
 # Copyright (c) 2026, JJtech and contributors
 # For license information, please see license.txt
 
+import json
+
 import frappe
 from frappe import _
 from frappe.utils import now_datetime
@@ -424,3 +426,129 @@ def complete_extrusion(
 	doc.save(ignore_permissions=True)
 	frappe.db.commit()
 	return doc.as_dict()
+
+
+# 절단작업 (호기+생산일자 기준 대기열, 파렛트 단위 일괄등록)
+
+
+@frappe.whitelist()
+def list_cutting_queue(workstation):
+	rows = frappe.get_all(
+		"Work Order",
+		filters={
+			"custom_workstation": workstation,
+			"docstatus": 1,
+			"status": ["not in", ["Completed", "Stopped", "Closed", "Cancelled"]],
+		},
+		fields=["name", "custom_mold", "qty", "sales_order", "sales_order_item"],
+		order_by="creation asc",
+	)
+
+	eligible = []
+	for row in rows:
+		has_extrusion = frappe.db.exists("Extrusion Job", {"work_order": row.name, "status": "완료"})
+		if not has_extrusion:
+			continue
+		already_cut = frappe.db.exists("Process Log", {"work_order": row.name, "process_type": "절단작업", "status": "완료"})
+		if already_cut:
+			continue
+		eligible.append(row)
+
+	sales_orders = {row.sales_order for row in eligible if row.sales_order}
+	customer_names = {}
+	if sales_orders:
+		for so in frappe.get_all("Sales Order", filters={"name": ["in", list(sales_orders)]}, fields=["name", "customer_name"]):
+			customer_names[so.name] = so.customer_name
+
+	line_names = {row.sales_order_item for row in eligible if row.sales_order_item}
+	line_info = {}
+	if line_names:
+		for line in frappe.get_all(
+			"Sales Order Item",
+			filters={"name": ["in", list(line_names)]},
+			fields=["name", "custom_order_spec", "custom_color", "custom_material", "custom_heat_treatment", "custom_order_weight"],
+		):
+			line_info[line.name] = line
+
+	result = []
+	for row in eligible:
+		line = line_info.get(row.sales_order_item, {})
+		in_progress = frappe.db.exists("Process Log", {"work_order": row.name, "process_type": "절단작업", "status": "진행중"})
+		result.append(
+			{
+				"work_order": row.name,
+				"mold_model": row.custom_mold,
+				"customer_name": customer_names.get(row.sales_order),
+				"spec": line.get("custom_order_spec"),
+				"color": line.get("custom_color"),
+				"material": line.get("custom_material"),
+				"heat_treatment": line.get("custom_heat_treatment"),
+				"qty": row.qty,
+				"weight": line.get("custom_order_weight"),
+				"cutting_status": "진행중" if in_progress else None,
+			}
+		)
+	return result
+
+
+@frappe.whitelist()
+def get_cutting_info(work_order):
+	mold_model = frappe.db.get_value("Work Order", work_order, "custom_mold")
+	drawing_image = frappe.db.get_value("Mold Model", mold_model, "drawing_image") if mold_model else None
+	return {
+		"work_order": work_order,
+		"mold_model": mold_model,
+		"drawing_image": drawing_image,
+	}
+
+
+@frappe.whitelist()
+def register_cutting(work_order, workstation, pallets):
+	if isinstance(pallets, str):
+		pallets = json.loads(pallets)
+
+	if not pallets or not pallets[0].get("cut_length") or not pallets[0].get("cut_qty"):
+		frappe.throw(_("1번 파렛트의 절단길이/절단수량을 입력해야 합니다."))
+
+	extrusion_job = frappe.db.get_value(
+		"Extrusion Job", {"work_order": work_order, "status": "완료"}, "name", order_by="creation desc"
+	)
+	if not extrusion_job:
+		frappe.throw(_("완료된 압출작업이 없습니다."))
+
+	total_qty = 0
+	created = []
+	for pallet in pallets:
+		if not pallet.get("cut_length") or not pallet.get("cut_qty"):
+			continue
+		doc = frappe.get_doc(
+			{
+				"doctype": "Cutting Lot",
+				"work_order": work_order,
+				"workstation": workstation,
+				"extrusion_job": extrusion_job,
+				"pallet_no": pallet.get("pallet_no") or "",
+				"cut_length": pallet["cut_length"],
+				"cut_qty": pallet["cut_qty"],
+				"sample_length": pallet.get("sample_length") or 0,
+				"sample_weight": pallet.get("sample_weight") or 0,
+			}
+		)
+		doc.insert(ignore_permissions=True)
+		created.append(doc.name)
+		total_qty += pallet["cut_qty"]
+
+	process_log_name = frappe.db.get_value(
+		"Process Log", {"work_order": work_order, "process_type": "절단작업", "status": "진행중"}, "name"
+	)
+	if not process_log_name:
+		frappe.throw(_("진행 중인 절단작업이 없습니다. 절단시작을 먼저 눌러주세요."))
+
+	log = frappe.get_doc("Process Log", process_log_name)
+	log.end_time = now_datetime()
+	log.qty = total_qty
+	log.status = "완료"
+	log.save(ignore_permissions=True)
+
+	frappe.db.commit()
+	return {"cutting_lots": created, "process_log": process_log_name, "total_qty": total_qty}
