@@ -1,0 +1,170 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "work_order",
+  "workstation",
+  "mold",
+  "shift",
+  "start_time",
+  "end_time",
+  "status",
+  "cut_length_1",
+  "cut_qty_1",
+  "cut_length_2",
+  "cut_qty_2",
+  "cut_length_3",
+  "cut_qty_3",
+  "cut_length_4",
+  "cut_qty_4",
+  "cut_length_5",
+  "cut_qty_5"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "EXJ-.YYYY.-.#####"
+  },
+  {
+   "fieldname": "work_order",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "작업지시",
+   "options": "Work Order",
+   "reqd": 1
+  },
+  {
+   "fieldname": "workstation",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "호기",
+   "options": "Workstation",
+   "reqd": 1
+  },
+  {
+   "fieldname": "mold",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "금형",
+   "options": "Mold",
+   "reqd": 1
+  },
+  {
+   "fieldname": "shift",
+   "fieldtype": "Select",
+   "label": "주야간구분",
+   "options": "주간\n야간",
+   "reqd": 1
+  },
+  {
+   "fieldname": "start_time",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "작업시작시각",
+   "reqd": 1
+  },
+  {
+   "fieldname": "end_time",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "작업완료시각"
+  },
+  {
+   "default": "진행중",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "상태",
+   "options": "진행중\n완료"
+  },
+  {
+   "fieldname": "cut_length_1",
+   "fieldtype": "Float",
+   "label": "절단길이1"
+  },
+  {
+   "fieldname": "cut_qty_1",
+   "fieldtype": "Float",
+   "label": "절단수량1"
+  },
+  {
+   "fieldname": "cut_length_2",
+   "fieldtype": "Float",
+   "label": "절단길이2"
+  },
+  {
+   "fieldname": "cut_qty_2",
+   "fieldtype": "Float",
+   "label": "절단수량2"
+  },
+  {
+   "fieldname": "cut_length_3",
+   "fieldtype": "Float",
+   "label": "절단길이3"
+  },
+  {
+   "fieldname": "cut_qty_3",
+   "fieldtype": "Float",
+   "label": "절단수량3"
+  },
+  {
+   "fieldname": "cut_length_4",
+   "fieldtype": "Float",
+   "label": "절단길이4"
+  },
+  {
+   "fieldname": "cut_qty_4",
+   "fieldtype": "Float",
+   "label": "절단수량4"
+  },
+  {
+   "fieldname": "cut_length_5",
+   "fieldtype": "Float",
+   "label": "절단길이5"
+  },
+  {
+   "fieldname": "cut_qty_5",
+   "fieldtype": "Float",
+   "label": "절단수량5"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "module": "Jjtech App",
+ "name": "Extrusion Job",
+ "naming_rule": "By \"Naming Series\" field",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "role": "Kiosk Worker",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "work_order",
+ "track_changes": 1
+}
