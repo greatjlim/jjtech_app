@@ -145,6 +145,93 @@ export async function getSalesOrderFieldOptions(fieldname: string): Promise<stri
   return options
 }
 
+export interface SalesOrderDoc {
+  name: string
+  customer: string
+  customer_name: string
+  transaction_date: string
+  delivery_date: string | null
+  custom_site_company_name: string | null
+  custom_delivery_address: string | null
+  custom_delivery_address_detail: string | null
+  custom_remark: string | null
+  status: string
+  docstatus: 0 | 1 | 2
+  net_total: number
+  grand_total: number
+}
+
+interface DocResponse<T> {
+  data: T
+}
+
+export async function getSalesOrder(name: string): Promise<SalesOrderDoc> {
+  const res = await apiGet<DocResponse<SalesOrderDoc>>(`/resource/${encodeURIComponent(DOCTYPE)}/${encodeURIComponent(name)}`)
+  return res.data
+}
+
+export interface SalesOrderFormLine {
+  item_code: string
+  item_name: string
+  qty: number
+  rate: number
+  custom_mold: string
+  custom_order_spec: string
+  custom_order_weight: number
+}
+
+export interface SalesOrderFormState {
+  customer: string
+  customer_name: string
+  transaction_date: string
+  delivery_date: string
+  custom_site_company_name: string
+  custom_delivery_address: string
+  custom_delivery_address_detail: string
+  custom_remark: string
+  items: SalesOrderFormLine[]
+}
+
+function today(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
+export function emptySalesOrderForm(): SalesOrderFormState {
+  return {
+    customer: '',
+    customer_name: '',
+    transaction_date: today(),
+    delivery_date: '',
+    custom_site_company_name: '',
+    custom_delivery_address: '',
+    custom_delivery_address_detail: '',
+    custom_remark: '',
+    items: [],
+  }
+}
+
+export function salesOrderDocToForm(doc: SalesOrderDoc, items: SalesOrderItemListItem[]): SalesOrderFormState {
+  return {
+    customer: doc.customer,
+    customer_name: doc.customer_name ?? '',
+    transaction_date: doc.transaction_date,
+    delivery_date: doc.delivery_date ?? '',
+    custom_site_company_name: doc.custom_site_company_name ?? '',
+    custom_delivery_address: doc.custom_delivery_address ?? '',
+    custom_delivery_address_detail: doc.custom_delivery_address_detail ?? '',
+    custom_remark: doc.custom_remark ?? '',
+    items: items.map((item) => ({
+      item_code: item.item_code,
+      item_name: item.item_name,
+      qty: item.qty,
+      rate: item.rate,
+      custom_mold: item.custom_mold ?? '',
+      custom_order_spec: item.custom_order_spec ?? '',
+      custom_order_weight: item.custom_order_weight ?? 0,
+    })),
+  }
+}
+
 export const STATUS_LABELS: Record<string, string> = {
   Draft: '초안',
   'On Hold': '보류',

@@ -21,6 +21,9 @@ import {
   type SalesOrderItemListItem,
   type SalesOrderListItem,
 } from '@/api/salesOrder'
+import SalesOrderRowActions from '@/components/salesOrder/SalesOrderRowActions.vue'
+import SalesOrderModifyPopup from '@/components/salesOrder/SalesOrderModifyPopup.vue'
+import SalesOrderRegisterPopup from '@/components/salesOrder/SalesOrderRegisterPopup.vue'
 
 ModuleRegistry.registerModules([AllCommunityModule])
 
@@ -44,6 +47,19 @@ const orderGridApi = shallowRef<GridApi | null>(null)
 const orderTotalCount = ref<number | undefined>(undefined)
 const selectedOrderName = ref('')
 
+const showModify = ref(false)
+const showRegister = ref(false)
+const editingName = ref('')
+
+const editOrder = (name: string) => {
+  editingName.value = name
+  showModify.value = true
+}
+
+const onSaved = () => {
+  refreshOrderGrid()
+}
+
 const orderColumnDefs: ColDef<SalesOrderListItem>[] = [
   { headerName: '주문번호', field: 'name', width: 160 },
   { headerName: '수주일자', field: 'transaction_date', width: 120 },
@@ -65,6 +81,13 @@ const orderColumnDefs: ColDef<SalesOrderListItem>[] = [
     },
   },
   { headerName: '납기예정일자', field: 'delivery_date', width: 130 },
+  {
+    headerName: '실행',
+    sortable: false,
+    cellRenderer: SalesOrderRowActions,
+    cellRendererParams: { onEdit: editOrder },
+    width: 100,
+  },
 ]
 
 const buildOrderDatasource = (): IDatasource => ({
@@ -215,13 +238,24 @@ const defaultColDef = { cellClass: ['d-flex', 'align-center'] }
       </v-row>
 
       <v-row>
-        <v-col cols="12">
+        <v-col cols="12" class="d-flex align-center justify-space-between">
           <h3 class="text-h6 mb-2">
             수주마스터
             <span v-if="orderTotalCount != null" class="text-body-2 text-medium-emphasis ml-2">
               총 <span class="text-error font-weight-bold">{{ orderTotalCount }}</span> 건
             </span>
           </h3>
+          <v-tooltip location="top" text="등록하기">
+            <template #activator="{ props: tooltipProps }">
+              <v-avatar size="35">
+                <v-btn v-bind="tooltipProps" class="rounded-circle" color="primary" flat @click="showRegister = true">
+                  <v-icon color="white">mdi-plus-circle</v-icon>
+                </v-btn>
+              </v-avatar>
+            </template>
+          </v-tooltip>
+        </v-col>
+        <v-col cols="12">
           <ag-grid-vue
             :column-defs="orderColumnDefs"
             :default-col-def="defaultColDef"
@@ -270,4 +304,7 @@ const defaultColDef = { cellClass: ['d-flex', 'align-center'] }
       </v-row>
     </v-card-text>
   </v-card>
+
+  <SalesOrderModifyPopup v-model="showModify" :name="editingName" @saved="onSaved" />
+  <SalesOrderRegisterPopup v-model="showRegister" @saved="onSaved" />
 </template>

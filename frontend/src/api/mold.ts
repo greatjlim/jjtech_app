@@ -78,6 +78,20 @@ export async function listMolds(
   return { items: listRes.data, total: countRes.message }
 }
 
+export async function searchMolds(search: string, limit = 50): Promise<MoldListItem[]> {
+  const filters: unknown[] = search ? [['mold_number', 'like', `%${search}%`]] : []
+  const params = new URLSearchParams({
+    fields: JSON.stringify(LIST_FIELDS),
+    limit_page_length: String(limit),
+    order_by: 'mold_number asc',
+  })
+  if (filters.length) {
+    params.set('filters', JSON.stringify(filters))
+  }
+  const res = await apiGet<ListResponse<MoldListItem>>(`/resource/Mold?${params.toString()}`)
+  return res.data
+}
+
 export async function getMold(name: string): Promise<MoldDoc> {
   const res = await apiGet<DocResponse<MoldDoc>>(`/resource/Mold/${encodeURIComponent(name)}`)
   return res.data
