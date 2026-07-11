@@ -13,6 +13,7 @@ class ProcessLog(Document):
 		self.validate_work_order()
 		self.validate_sequence()
 		self.validate_duplicate_in_progress()
+		self.validate_not_already_completed()
 
 	def validate_work_order(self):
 		wo = frappe.get_doc("Work Order", self.work_order)
@@ -53,3 +54,16 @@ class ProcessLog(Document):
 		)
 		if existing:
 			frappe.throw(_("이미 진행 중인 {0} 기록이 있습니다 ({1}).").format(self.process_type, existing))
+
+	def validate_not_already_completed(self):
+		completed = frappe.db.exists(
+			"Process Log",
+			{
+				"work_order": self.work_order,
+				"process_type": self.process_type,
+				"status": "완료",
+				"name": ["!=", self.name or ""],
+			},
+		)
+		if completed:
+			frappe.throw(_("{0}은(는) 이미 완료되었습니다 ({1}).").format(self.process_type, completed))
