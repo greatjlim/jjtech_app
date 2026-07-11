@@ -33,6 +33,7 @@ const logout = async () => {
         <v-list-item to="/dashboard" prepend-icon="mdi-view-dashboard" title="대시보드" />
         <v-list-item to="/companies" prepend-icon="mdi-domain" title="회사 관리" />
         <v-list-item to="/customers" prepend-icon="mdi-account-group" title="거래처 관리" />
+        <v-list-item to="/items" prepend-icon="mdi-cube-outline" title="물품관리" />
         <v-list-item to="/molds" prepend-icon="mdi-hammer-wrench" title="금형관리" />
         <v-list-item to="/sales-orders" prepend-icon="mdi-clipboard-text" title="주문관리" />
         <v-list-item to="/work-orders" prepend-icon="mdi-factory" title="작업지시" />

@@ -44,6 +44,11 @@ const router = createRouter({
           component: () => import('@/views/CustomerListView.vue'),
         },
         {
+          path: 'items',
+          name: 'items',
+          component: () => import('@/views/ItemListView.vue'),
+        },
+        {
           path: 'molds',
           name: 'molds',
           component: () => import('@/views/MoldManagementView.vue'),
