@@ -8,6 +8,17 @@ from frappe.utils import now_datetime
 STAGE_ORDER = ["금형예열", "압출작업", "절단작업"]
 
 
+def _is_fully_cycled(work_order):
+	return frappe.db.exists(
+		"Process Log",
+		{
+			"work_order": work_order,
+			"process_type": STAGE_ORDER[-1],
+			"status": "완료",
+		},
+	)
+
+
 def _get_current_work_order(workstation):
 	rows = frappe.get_all(
 		"Work Order",
@@ -18,9 +29,11 @@ def _get_current_work_order(workstation):
 		},
 		fields=["name", "production_item", "item_name", "qty"],
 		order_by="creation asc",
-		limit=1,
 	)
-	return rows[0] if rows else None
+	for row in rows:
+		if not _is_fully_cycled(row.name):
+			return row
+	return None
 
 
 def _get_logs(work_order):
