@@ -281,3 +281,125 @@ def change_zone(name, new_zone):
 def cancel_preheat(name):
 	frappe.delete_doc("Mold Preheat Job", name, ignore_permissions=True)
 	frappe.db.commit()
+
+
+# 압출작업 (같은 형번을 쓰는 작업지시 대기열 + 절단길이/수량 기록)
+
+RECIPE_FIELDS = ["cutting_method", "billet_length", "billet_qty", "extrusion_length", "pieces_per_billet"]
+
+
+def _extrusion_queue_filters(mold_model):
+	return {
+		"custom_mold": mold_model,
+		"docstatus": 1,
+		"status": ["not in", ["Completed", "Stopped", "Closed", "Cancelled"]],
+	}
+
+
+@frappe.whitelist()
+def get_extrusion_recipe(mold):
+	mold_model = frappe.db.get_value("Mold", mold, "mold_model")
+	if not mold_model:
+		frappe.throw(_("금형 {0}의 형번을 찾을 수 없습니다.").format(mold))
+
+	recipe = frappe.db.get_value("Mold Model", mold_model, RECIPE_FIELDS, as_dict=True) or {}
+	target_qty = (
+		frappe.db.sql(
+			"""select sum(qty) from `tabWork Order`
+			where custom_mold=%s and docstatus=1 and status not in ('Completed','Stopped','Closed','Cancelled')""",
+			(mold_model,),
+		)[0][0]
+		or 0
+	)
+
+	return {
+		"mold": mold,
+		"mold_model": mold_model,
+		**recipe,
+		"target_qty": target_qty,
+	}
+
+
+@frappe.whitelist()
+def list_extrusion_queue(mold):
+	mold_model = frappe.db.get_value("Mold", mold, "mold_model")
+	if not mold_model:
+		return []
+
+	rows = frappe.get_all(
+		"Work Order",
+		filters=_extrusion_queue_filters(mold_model),
+		fields=["name", "qty", "sales_order"],
+		order_by="creation asc",
+	)
+
+	sales_orders = {row.sales_order for row in rows if row.sales_order}
+	customer_names = {}
+	if sales_orders:
+		for so in frappe.get_all("Sales Order", filters={"name": ["in", list(sales_orders)]}, fields=["name", "customer_name"]):
+			customer_names[so.name] = so.customer_name
+
+	for row in rows:
+		row["customer_name"] = customer_names.get(row.sales_order)
+		job = frappe.get_all(
+			"Extrusion Job",
+			filters={"work_order": row.name},
+			fields=["status"],
+			order_by="creation desc",
+			limit=1,
+		)
+		row["extrusion_status"] = job[0].status if job else None
+
+	return rows
+
+
+@frappe.whitelist()
+def start_extrusion(work_order, workstation, mold, shift):
+	doc = frappe.get_doc(
+		{
+			"doctype": "Extrusion Job",
+			"work_order": work_order,
+			"workstation": workstation,
+			"mold": mold,
+			"shift": shift,
+			"start_time": now_datetime(),
+			"status": "진행중",
+		}
+	)
+	doc.insert(ignore_permissions=True)
+	frappe.db.commit()
+	return doc.as_dict()
+
+
+@frappe.whitelist()
+def complete_extrusion(
+	name,
+	cut_length_1,
+	cut_qty_1,
+	cut_length_2=None,
+	cut_qty_2=None,
+	cut_length_3=None,
+	cut_qty_3=None,
+	cut_length_4=None,
+	cut_qty_4=None,
+	cut_length_5=None,
+	cut_qty_5=None,
+):
+	doc = frappe.get_doc("Extrusion Job", name)
+	if doc.status == "완료":
+		frappe.throw(_("이미 완료된 압출작업입니다."))
+	doc.end_time = now_datetime()
+	doc.cut_length_1 = cut_length_1
+	doc.cut_qty_1 = cut_qty_1
+	doc.cut_length_2 = cut_length_2
+	doc.cut_qty_2 = cut_qty_2
+	doc.cut_length_3 = cut_length_3
+	doc.cut_qty_3 = cut_qty_3
+	doc.cut_length_4 = cut_length_4
+	doc.cut_qty_4 = cut_qty_4
+	doc.cut_length_5 = cut_length_5
+	doc.cut_qty_5 = cut_qty_5
+	doc.status = "완료"
+	doc.save(ignore_permissions=True)
+	frappe.db.commit()
+	return doc.as_dict()
