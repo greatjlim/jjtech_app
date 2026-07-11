@@ -207,6 +207,38 @@ onMounted(async () => {
   <v-divider class="my-6" />
   <v-row>
     <v-col cols="12">
+      <h6 class="text-h6">압출 표준설정</h6>
+    </v-col>
+    <v-col cols="12" md="4">
+      <LabelWithElement title="절단방법">
+        <v-text-field v-model="form.cutting_method" maxlength="20" />
+      </LabelWithElement>
+    </v-col>
+    <v-col cols="12" md="4">
+      <LabelWithElement title="빌렛트길이">
+        <v-text-field v-model.number="form.billet_length" type="number" suffix="mm" />
+      </LabelWithElement>
+    </v-col>
+    <v-col cols="12" md="4">
+      <LabelWithElement title="빌렛트수량">
+        <v-text-field v-model.number="form.billet_qty" type="number" />
+      </LabelWithElement>
+    </v-col>
+    <v-col cols="12" md="6">
+      <LabelWithElement title="압출길이">
+        <v-text-field v-model.number="form.extrusion_length" type="number" suffix="mm" />
+      </LabelWithElement>
+    </v-col>
+    <v-col cols="12" md="6">
+      <LabelWithElement title="개당제품수">
+        <v-text-field v-model.number="form.pieces_per_billet" type="number" />
+      </LabelWithElement>
+    </v-col>
+  </v-row>
+
+  <v-divider class="my-6" />
+  <v-row>
+    <v-col cols="12">
       <h6 class="text-h6">단열</h6>
     </v-col>
     <v-col cols="12" md="4">

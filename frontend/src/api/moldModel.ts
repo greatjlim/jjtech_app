@@ -56,6 +56,11 @@ export interface MoldModelDoc {
   partner_model_number: string | null
   quality_precaution_flag: 0 | 1
   quality_precaution: string | null
+  cutting_method: string | null
+  billet_length: number | null
+  billet_qty: number | null
+  extrusion_length: number | null
+  pieces_per_billet: number | null
   stock: number | null
   thickness: number | null
   internal_surface_area: number | null
@@ -95,6 +100,11 @@ export function emptyMoldModelForm(): Partial<MoldModelDoc> {
     partner_model_number: '',
     quality_precaution_flag: 0,
     quality_precaution: '',
+    cutting_method: '',
+    billet_length: 0,
+    billet_qty: 0,
+    extrusion_length: 0,
+    pieces_per_billet: 0,
     stock: 0,
     thickness: 0,
     internal_surface_area: 0,

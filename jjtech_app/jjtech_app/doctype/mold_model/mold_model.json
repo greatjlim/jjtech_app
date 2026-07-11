@@ -25,6 +25,11 @@
   "partner_model_number",
   "quality_precaution_flag",
   "quality_precaution",
+  "cutting_method",
+  "billet_length",
+  "billet_qty",
+  "extrusion_length",
+  "pieces_per_billet",
   "stock",
   "thickness",
   "internal_surface_area",
@@ -166,6 +171,31 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "품질주의사항"
+  },
+  {
+   "fieldname": "cutting_method",
+   "fieldtype": "Data",
+   "label": "절단방법"
+  },
+  {
+   "fieldname": "billet_length",
+   "fieldtype": "Float",
+   "label": "빌렛트길이"
+  },
+  {
+   "fieldname": "billet_qty",
+   "fieldtype": "Int",
+   "label": "빌렛트수량"
+  },
+  {
+   "fieldname": "extrusion_length",
+   "fieldtype": "Float",
+   "label": "압출길이"
+  },
+  {
+   "fieldname": "pieces_per_billet",
+   "fieldtype": "Int",
+   "label": "개당제품수"
   },
   {
    "fieldname": "stock",
