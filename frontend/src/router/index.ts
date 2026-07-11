@@ -80,6 +80,12 @@ const router = createRouter({
           meta: { tabTitle: '발주관리', tabIcon: 'mdi-cart-arrow-down' },
         },
         {
+          path: 'purchase-receipts',
+          name: 'purchase-receipts',
+          component: () => import('@/views/PurchaseReceiptListView.vue'),
+          meta: { tabTitle: '입고관리', tabIcon: 'mdi-package-variant-closed' },
+        },
+        {
           path: 'work-orders',
           name: 'work-orders',
           component: () => import('@/views/WorkOrderListView.vue'),
