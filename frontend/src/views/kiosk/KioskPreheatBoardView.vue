@@ -44,24 +44,37 @@ const refreshBoard = async () => {
   board.value = await getZoneBoard(workstation.value)
 }
 
-let timer: number | undefined
+const now = ref(Date.now())
+
+let pollTimer: number | undefined
+let tickTimer: number | undefined
 
 onMounted(async () => {
   await refreshBoard()
-  timer = window.setInterval(refreshBoard, 5000)
+  pollTimer = window.setInterval(refreshBoard, 5000)
+  tickTimer = window.setInterval(() => {
+    now.value = Date.now()
+  }, 1000)
 })
 
 onUnmounted(() => {
-  window.clearInterval(timer)
+  window.clearInterval(pollTimer)
+  window.clearInterval(tickTimer)
 })
+
+const checkInLabel = (checkInTime: string) => {
+  const start = new Date(checkInTime.replace(' ', 'T'))
+  return start.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })
+}
 
 const elapsedLabel = (checkInTime: string) => {
   const start = new Date(checkInTime.replace(' ', 'T'))
-  const diffMs = Math.max(0, Date.now() - start.getTime())
-  const totalMinutes = Math.floor(diffMs / 60000)
-  const h = String(Math.floor(totalMinutes / 60)).padStart(2, '0')
-  const m = String(totalMinutes % 60).padStart(2, '0')
-  return `${h}:${m}`
+  const diffMs = Math.max(0, now.value - start.getTime())
+  const totalSeconds = Math.floor(diffMs / 1000)
+  const h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0')
+  const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0')
+  const s = String(totalSeconds % 60).padStart(2, '0')
+  return `${h}:${m}:${s}`
 }
 
 const goBack = () => {
@@ -216,12 +229,15 @@ const confirmRegister = async (zone: '1' | '2' | '3') => {
         >
           <div class="d-flex justify-space-between">
             <span class="text-h6 font-weight-bold">{{ job.mold_number }}</span>
-            <span class="text-h6">{{ elapsedLabel(job.check_in_time) }}</span>
           </div>
           <div class="text-body-2 text-medium-emphasis">
             {{ job.material }} · {{ job.weight }}kg · {{ job.customer_name }}
           </div>
           <div class="text-caption text-medium-emphasis">{{ job.work_order }}</div>
+          <div class="d-flex justify-space-between mt-2">
+            <span class="text-body-2">입고 {{ checkInLabel(job.check_in_time) }}</span>
+            <span class="text-h6 font-weight-bold">예열 {{ elapsedLabel(job.check_in_time) }}</span>
+          </div>
         </v-card>
         <div v-if="board[panel.key].length === 0" class="text-center text-medium-emphasis pa-4">비어 있음</div>
       </v-card>
