@@ -90,9 +90,8 @@ const goHome = () => {
         <v-list-item to="/dashboard" prepend-icon="mdi-view-dashboard" title="대시보드" />
 
         <v-list-item
-          prepend-icon="mdi-folder-outline"
+          :prepend-icon="openGroups['기준정보'] ? 'mdi-chevron-up' : 'mdi-chevron-down'"
           title="기준정보"
-          :append-icon="rail ? undefined : openGroups['기준정보'] ? 'mdi-chevron-up' : 'mdi-chevron-down'"
           @click="toggleGroup('기준정보')"
         />
         <v-expand-transition>
@@ -106,9 +105,8 @@ const goHome = () => {
         </v-expand-transition>
 
         <v-list-item
-          prepend-icon="mdi-briefcase-outline"
+          :prepend-icon="openGroups['영업'] ? 'mdi-chevron-up' : 'mdi-chevron-down'"
           title="영업"
-          :append-icon="rail ? undefined : openGroups['영업'] ? 'mdi-chevron-up' : 'mdi-chevron-down'"
           @click="toggleGroup('영업')"
         />
         <v-expand-transition>
@@ -119,9 +117,8 @@ const goHome = () => {
         </v-expand-transition>
 
         <v-list-item
-          prepend-icon="mdi-cog-outline"
+          :prepend-icon="openGroups['생산'] ? 'mdi-chevron-up' : 'mdi-chevron-down'"
           title="생산"
-          :append-icon="rail ? undefined : openGroups['생산'] ? 'mdi-chevron-up' : 'mdi-chevron-down'"
           @click="toggleGroup('생산')"
         />
         <v-expand-transition>
@@ -131,9 +128,8 @@ const goHome = () => {
         </v-expand-transition>
 
         <v-list-item
-          prepend-icon="mdi-warehouse"
+          :prepend-icon="openGroups['재고'] ? 'mdi-chevron-up' : 'mdi-chevron-down'"
           title="재고"
-          :append-icon="rail ? undefined : openGroups['재고'] ? 'mdi-chevron-up' : 'mdi-chevron-down'"
           @click="toggleGroup('재고')"
         />
         <v-expand-transition>
