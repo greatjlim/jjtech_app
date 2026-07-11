@@ -71,11 +71,6 @@ const router = createRouter({
           component: () => import('@/views/kiosk/KioskHomeView.vue'),
         },
         {
-          path: ':workstation',
-          name: 'kiosk-process-select',
-          component: () => import('@/views/kiosk/KioskProcessSelectView.vue'),
-        },
-        {
           path: ':workstation/preheat',
           name: 'kiosk-preheat-board',
           component: () => import('@/views/kiosk/KioskPreheatBoardView.vue'),
@@ -89,6 +84,11 @@ const router = createRouter({
           path: ':workstation/cutting',
           name: 'kiosk-cutting',
           component: () => import('@/views/kiosk/KioskCuttingView.vue'),
+        },
+        {
+          path: ':workstation/packaging',
+          name: 'kiosk-packaging',
+          component: () => import('@/views/kiosk/KioskPackagingView.vue'),
         },
       ],
     },
