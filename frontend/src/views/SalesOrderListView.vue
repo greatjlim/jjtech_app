@@ -204,7 +204,7 @@ const lineSummary = ref({ qty: 0, amount: 0 })
 
 const lineColumnDefs: ColDef<SalesOrderItemListItem>[] = [
   { headerName: '품명', field: 'item_name', width: 220 },
-  { headerName: '금형', field: 'custom_mold', width: 140 },
+  { headerName: '형번', field: 'custom_mold', width: 140 },
   { headerName: '주문수량', field: 'qty', width: 100 },
   { headerName: '규격', field: 'custom_order_spec', width: 120 },
   { headerName: '수주중량', field: 'custom_order_weight', width: 100 },

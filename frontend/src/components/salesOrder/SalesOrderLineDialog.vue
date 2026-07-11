@@ -3,14 +3,14 @@ import { computed, ref, watch } from 'vue'
 import FormDialog from '@/components/FormDialog.vue'
 import LabelWithElement from '@/components/LabelWithElement.vue'
 import { searchItems, type ItemListItem } from '@/api/item'
-import { searchMolds, type MoldListItem } from '@/api/mold'
+import { searchMoldModels, type MoldModelListItem } from '@/api/moldModel'
 import type { SalesOrderFormLine } from '@/api/salesOrder'
 
 const show = defineModel<boolean>({ default: false })
 const emit = defineEmits<{ add: [line: SalesOrderFormLine] }>()
 
 const itemOptions = ref<ItemListItem[]>([])
-const moldOptions = ref<MoldListItem[]>([])
+const moldOptions = ref<MoldModelListItem[]>([])
 
 const itemCode = ref('')
 const itemName = ref('')
@@ -30,7 +30,7 @@ const init = async () => {
   qty.value = 1
   orderWeight.value = 0
   rate.value = 0
-  ;[itemOptions.value, moldOptions.value] = await Promise.all([searchItems(''), searchMolds('')])
+  ;[itemOptions.value, moldOptions.value] = await Promise.all([searchItems(''), searchMoldModels('')])
 }
 
 watch(show, (newShow) => {
@@ -75,11 +75,11 @@ const save = () => {
         </LabelWithElement>
       </v-col>
       <v-col cols="12" md="6">
-        <LabelWithElement title="금형번호">
+        <LabelWithElement title="형번">
           <v-autocomplete
             v-model="moldName"
             :items="moldOptions"
-            item-title="mold_number"
+            item-title="model_number"
             item-value="name"
             clearable
             variant="outlined"

@@ -196,6 +196,20 @@ export async function deleteMoldModel(name: string): Promise<void> {
   await apiDelete(`/resource/${encodeURIComponent(DOCTYPE)}/${encodeURIComponent(name)}`)
 }
 
+export async function searchMoldModels(search: string, limit = 50): Promise<MoldModelListItem[]> {
+  const filters: unknown[] = search ? [['model_number', 'like', `%${search}%`]] : []
+  const params = new URLSearchParams({
+    fields: JSON.stringify(LIST_FIELDS),
+    limit_page_length: String(limit),
+    order_by: 'model_number asc',
+  })
+  if (filters.length) {
+    params.set('filters', JSON.stringify(filters))
+  }
+  const res = await apiGet<{ data: MoldModelListItem[] }>(`/resource/${encodeURIComponent(DOCTYPE)}?${params.toString()}`)
+  return res.data
+}
+
 const optionsCache = new Map<string, string[]>()
 
 export async function getMoldModelFieldOptions(fieldname: string): Promise<string[]> {

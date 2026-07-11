@@ -123,7 +123,7 @@ const columnDefs: ColDef<WorkOrderListItem>[] = [
   { headerName: '품목', field: 'item_name', width: 200 },
   { headerName: '수량', field: 'qty', width: 100 },
   { headerName: '호기', field: 'custom_workstation', width: 100 },
-  { headerName: '금형', field: 'custom_mold', width: 140 },
+  { headerName: '형번', field: 'custom_mold', width: 140 },
   { headerName: '작업예정일', field: 'planned_start_date', width: 130 },
   { headerName: '납기', field: 'expected_delivery_date', width: 130 },
   { headerName: '상태', field: 'status', width: 140 },

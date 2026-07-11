@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import LabelWithElement from '@/components/LabelWithElement.vue'
-import { searchMolds, type MoldListItem } from '@/api/mold'
+import { searchMoldModels, type MoldModelListItem } from '@/api/moldModel'
 import { listSalesOrderItems, type SalesOrderItemListItem } from '@/api/salesOrder'
 import {
   getWorkOrderedQty,
@@ -23,14 +23,14 @@ const form = defineModel<WorkOrderFormState>({ required: true })
 
 const salesOrderOptions = ref<SalesOrderOption[]>([])
 const lineOptions = ref<SalesOrderItemListItem[]>([])
-const moldOptions = ref<MoldListItem[]>([])
+const moldOptions = ref<MoldModelListItem[]>([])
 const workstationOptions = ref<string[]>([])
 const remainingQty = ref<number | null>(null)
 
 onMounted(async () => {
   ;[salesOrderOptions.value, moldOptions.value, workstationOptions.value] = await Promise.all([
     searchOpenSalesOrders(''),
-    searchMolds(''),
+    searchMoldModels(''),
     listWorkstations(),
   ])
 })
@@ -145,11 +145,11 @@ const lineLabel = (line: SalesOrderItemListItem) => `${line.item_name} (주문 $
       </LabelWithElement>
     </v-col>
     <v-col cols="12" md="6">
-      <LabelWithElement title="금형">
+      <LabelWithElement title="형번">
         <v-autocomplete
           v-model="form.custom_mold"
           :items="moldOptions"
-          item-title="mold_number"
+          item-title="model_number"
           item-value="name"
           clearable
           :disabled="readonly"
