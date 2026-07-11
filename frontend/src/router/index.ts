@@ -50,6 +50,12 @@ const router = createRouter({
           meta: { tabTitle: '거래처 관리', tabIcon: 'mdi-account-group' },
         },
         {
+          path: 'suppliers',
+          name: 'suppliers',
+          component: () => import('@/views/SupplierListView.vue'),
+          meta: { tabTitle: '공급업체관리', tabIcon: 'mdi-account-hard-hat' },
+        },
+        {
           path: 'items',
           name: 'items',
           component: () => import('@/views/ItemListView.vue'),
