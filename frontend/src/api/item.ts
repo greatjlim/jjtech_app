@@ -25,6 +25,12 @@ export async function searchItems(search: string, limit = 50): Promise<ItemListI
   return res.data
 }
 
+export async function listUoms(): Promise<string[]> {
+  const params = new URLSearchParams({ fields: JSON.stringify(['name']), limit_page_length: '0', order_by: 'name asc' })
+  const res = await apiGet<ListResponse<{ name: string }>>(`/resource/UOM?${params.toString()}`)
+  return res.data.map((row) => row.name)
+}
+
 // 물품관리 (기준정보) CRUD — reference/front-end-main의 물품관리 화면을 Item DocType에 포팅
 
 const DOCTYPE = 'Item'
