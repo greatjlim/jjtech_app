@@ -1,16 +1,25 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useTheme } from 'vuetify'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { authStore, authActions } from '@/stores/auth'
+import { tabsActions } from '@/stores/tabs'
 import { getMyTheme, setMyTheme } from '@/api/theme'
 import { THEME_DARK, THEME_LIGHT } from '@/plugins/vuetify'
+import TabStrip from '@/components/TabStrip.vue'
 
+const route = useRoute()
 const router = useRouter()
 const drawer = ref(true)
 const rail = ref(false)
 const theme = useTheme()
 const isDark = ref(false)
+
+tabsActions.syncFromRoute(route)
+watch(
+  () => route.path,
+  () => tabsActions.syncFromRoute(route),
+)
 
 const initials = computed(() => (authStore.fullName || authStore.user || '?').trim().slice(0, 1).toUpperCase())
 
@@ -103,6 +112,7 @@ const logout = async () => {
     </v-navigation-drawer>
 
     <v-main>
+      <TabStrip />
       <v-container fluid>
         <router-view />
       </v-container>
