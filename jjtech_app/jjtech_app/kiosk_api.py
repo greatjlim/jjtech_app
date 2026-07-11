@@ -145,3 +145,134 @@ def complete_process(process_log, qty=None):
 	doc.save(ignore_permissions=True)
 	frappe.db.commit()
 	return doc.as_dict()
+
+
+# 금형예열 (Zone 기반 다중 동시 예열 + 대출)
+
+PREHEAT_ZONES = ["1", "2", "3"]
+LOAN_ZONE = "0"
+
+
+@frappe.whitelist()
+def list_preheat_eligible_work_orders(workstation):
+	rows = frappe.get_all(
+		"Work Order",
+		filters={
+			"custom_workstation": workstation,
+			"docstatus": 1,
+			"status": ["not in", ["Completed", "Stopped", "Closed", "Cancelled"]],
+		},
+		fields=["name", "custom_mold", "qty", "expected_delivery_date", "sales_order", "creation"],
+		order_by="creation asc",
+	)
+
+	sales_orders = {row.sales_order for row in rows if row.sales_order}
+	customer_names = {}
+	if sales_orders:
+		for so in frappe.get_all("Sales Order", filters={"name": ["in", list(sales_orders)]}, fields=["name", "customer_name"]):
+			customer_names[so.name] = so.customer_name
+
+	for row in rows:
+		row["customer_name"] = customer_names.get(row.sales_order)
+
+	return rows
+
+
+@frappe.whitelist()
+def list_available_molds(mold_model):
+	return frappe.get_all(
+		"Mold",
+		filters={"mold_model": mold_model, "current_status": "보관중"},
+		fields=["name", "mold_number", "mold_model"],
+		order_by="mold_number asc",
+	)
+
+
+def _enrich_zone_job(job):
+	mold = frappe.db.get_value("Mold", job.mold, ["mold_number", "mold_model"], as_dict=True) or {}
+	mold_model_info = {}
+	if mold.get("mold_model"):
+		mold_model_info = (
+			frappe.db.get_value(
+				"Mold Model", mold["mold_model"], ["texture_heat_treatment", "unit_weight"], as_dict=True
+			)
+			or {}
+		)
+	customer_name = None
+	sales_order = frappe.db.get_value("Work Order", job.work_order, "sales_order")
+	if sales_order:
+		customer_name = frappe.db.get_value("Sales Order", sales_order, "customer_name")
+
+	return {
+		"name": job.name,
+		"work_order": job.work_order,
+		"mold": job.mold,
+		"mold_number": mold.get("mold_number"),
+		"material": mold_model_info.get("texture_heat_treatment"),
+		"weight": mold_model_info.get("unit_weight"),
+		"check_in_time": job.check_in_time,
+		"customer_name": customer_name,
+	}
+
+
+@frappe.whitelist()
+def get_zone_board(workstation):
+	jobs = frappe.get_all(
+		"Mold Preheat Job",
+		filters={"workstation": workstation},
+		fields=["name", "work_order", "mold", "zone", "check_in_time"],
+		order_by="check_in_time asc",
+	)
+
+	board = {"1": [], "2": [], "3": [], "0": []}
+	for job in jobs:
+		board[job.zone].append(_enrich_zone_job(job))
+	return board
+
+
+@frappe.whitelist()
+def register_preheat(work_order, workstation, mold, zone):
+	if zone not in PREHEAT_ZONES:
+		frappe.throw(_("Zone은 1/2/3 중에서만 고를 수 있습니다."))
+
+	doc = frappe.get_doc(
+		{
+			"doctype": "Mold Preheat Job",
+			"work_order": work_order,
+			"workstation": workstation,
+			"mold": mold,
+			"zone": zone,
+			"check_in_time": now_datetime(),
+		}
+	)
+	doc.insert(ignore_permissions=True)
+	frappe.db.commit()
+	return doc.as_dict()
+
+
+@frappe.whitelist()
+def checkout_mold(name):
+	doc = frappe.get_doc("Mold Preheat Job", name)
+	if doc.zone == LOAN_ZONE:
+		frappe.throw(_("이미 대출된 금형입니다."))
+	doc.zone = LOAN_ZONE
+	doc.save(ignore_permissions=True)
+	frappe.db.commit()
+	return doc.as_dict()
+
+
+@frappe.whitelist()
+def change_zone(name, new_zone):
+	if new_zone not in PREHEAT_ZONES:
+		frappe.throw(_("Zone은 1/2/3 중에서만 고를 수 있습니다."))
+	doc = frappe.get_doc("Mold Preheat Job", name)
+	doc.zone = new_zone
+	doc.save(ignore_permissions=True)
+	frappe.db.commit()
+	return doc.as_dict()
+
+
+@frappe.whitelist()
+def cancel_preheat(name):
+	frappe.delete_doc("Mold Preheat Job", name, ignore_permissions=True)
+	frappe.db.commit()
