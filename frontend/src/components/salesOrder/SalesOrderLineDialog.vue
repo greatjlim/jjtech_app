@@ -19,6 +19,9 @@ const orderSpec = ref('')
 const qty = ref(1)
 const orderWeight = ref(0)
 const rate = ref(0)
+const color = ref('')
+const material = ref('')
+const heatTreatment = ref('')
 
 const amount = computed(() => (qty.value || 0) * (rate.value || 0))
 
@@ -30,6 +33,9 @@ const init = async () => {
   qty.value = 1
   orderWeight.value = 0
   rate.value = 0
+  color.value = ''
+  material.value = ''
+  heatTreatment.value = ''
   ;[itemOptions.value, moldOptions.value] = await Promise.all([searchItems(''), searchMoldModels('')])
 }
 
@@ -54,6 +60,9 @@ const save = () => {
     custom_mold: moldName.value,
     custom_order_spec: orderSpec.value,
     custom_order_weight: orderWeight.value,
+    custom_color: color.value,
+    custom_material: material.value,
+    custom_heat_treatment: heatTreatment.value,
   })
   show.value = false
 }
@@ -110,6 +119,21 @@ const save = () => {
       <v-col cols="12" md="4">
         <LabelWithElement title="금액">
           <v-text-field :model-value="amount.toLocaleString()" readonly />
+        </LabelWithElement>
+      </v-col>
+      <v-col cols="12" md="4">
+        <LabelWithElement title="색상">
+          <v-text-field v-model="color" placeholder="추후통보 가능" maxlength="20" />
+        </LabelWithElement>
+      </v-col>
+      <v-col cols="12" md="4">
+        <LabelWithElement title="재질">
+          <v-text-field v-model="material" placeholder="예: 6063" maxlength="20" />
+        </LabelWithElement>
+      </v-col>
+      <v-col cols="12" md="4">
+        <LabelWithElement title="열처리방법">
+          <v-text-field v-model="heatTreatment" placeholder="예: A6063S-T5" maxlength="20" />
         </LabelWithElement>
       </v-col>
     </v-row>

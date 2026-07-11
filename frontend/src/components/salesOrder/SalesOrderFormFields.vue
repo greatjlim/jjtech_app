@@ -90,8 +90,11 @@ const removeLine = (index: number) => {
     <thead>
       <tr>
         <th>품명</th>
-        <th>금형</th>
+        <th>형번</th>
         <th>규격</th>
+        <th>색상</th>
+        <th>재질</th>
+        <th>열처리방법</th>
         <th>수량</th>
         <th>중량</th>
         <th>단가</th>
@@ -104,6 +107,9 @@ const removeLine = (index: number) => {
         <td>{{ line.item_name }}</td>
         <td>{{ line.custom_mold }}</td>
         <td>{{ line.custom_order_spec }}</td>
+        <td>{{ line.custom_color }}</td>
+        <td>{{ line.custom_material }}</td>
+        <td>{{ line.custom_heat_treatment }}</td>
         <td>{{ line.qty }}</td>
         <td>{{ line.custom_order_weight }}</td>
         <td>{{ line.rate.toLocaleString() }}</td>
@@ -115,7 +121,7 @@ const removeLine = (index: number) => {
         </td>
       </tr>
       <tr v-if="form.items.length === 0">
-        <td colspan="8" class="text-center text-medium-emphasis">등록된 품목이 없습니다</td>
+        <td colspan="11" class="text-center text-medium-emphasis">등록된 품목이 없습니다</td>
       </tr>
     </tbody>
   </v-table>

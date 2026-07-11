@@ -2,12 +2,16 @@ import { apiGet, apiPost } from './client'
 
 export interface ExtrusionRecipe {
   mold: string
+  mold_number: string | null
+  hole_count: number | null
   mold_model: string
   cutting_method: string | null
   billet_length: number | null
   billet_qty: number | null
   extrusion_length: number | null
   pieces_per_billet: number | null
+  unit_weight: number | null
+  drawing_image: string | null
   target_qty: number
 }
 
@@ -15,7 +19,13 @@ export interface ExtrusionQueueItem {
   name: string
   qty: number
   sales_order: string | null
+  sales_order_item: string | null
   customer_name: string | null
+  spec: string | null
+  color: string | null
+  material: string | null
+  heat_treatment: string | null
+  weight: number | null
   extrusion_status: '진행중' | '완료' | null
 }
 

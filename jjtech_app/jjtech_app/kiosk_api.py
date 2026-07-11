@@ -298,11 +298,14 @@ def _extrusion_queue_filters(mold_model):
 
 @frappe.whitelist()
 def get_extrusion_recipe(mold):
-	mold_model = frappe.db.get_value("Mold", mold, "mold_model")
-	if not mold_model:
+	mold_doc = frappe.db.get_value("Mold", mold, ["mold_model", "mold_number", "hole_count"], as_dict=True)
+	if not mold_doc or not mold_doc.mold_model:
 		frappe.throw(_("금형 {0}의 형번을 찾을 수 없습니다.").format(mold))
 
-	recipe = frappe.db.get_value("Mold Model", mold_model, RECIPE_FIELDS, as_dict=True) or {}
+	mold_model = mold_doc.mold_model
+	recipe = (
+		frappe.db.get_value("Mold Model", mold_model, RECIPE_FIELDS + ["unit_weight", "drawing_image"], as_dict=True) or {}
+	)
 	target_qty = (
 		frappe.db.sql(
 			"""select sum(qty) from `tabWork Order`
@@ -314,6 +317,8 @@ def get_extrusion_recipe(mold):
 
 	return {
 		"mold": mold,
+		"mold_number": mold_doc.mold_number,
+		"hole_count": mold_doc.hole_count,
 		"mold_model": mold_model,
 		**recipe,
 		"target_qty": target_qty,
@@ -329,7 +334,7 @@ def list_extrusion_queue(mold):
 	rows = frappe.get_all(
 		"Work Order",
 		filters=_extrusion_queue_filters(mold_model),
-		fields=["name", "qty", "sales_order"],
+		fields=["name", "qty", "sales_order", "sales_order_item"],
 		order_by="creation asc",
 	)
 
@@ -339,8 +344,24 @@ def list_extrusion_queue(mold):
 		for so in frappe.get_all("Sales Order", filters={"name": ["in", list(sales_orders)]}, fields=["name", "customer_name"]):
 			customer_names[so.name] = so.customer_name
 
+	line_names = {row.sales_order_item for row in rows if row.sales_order_item}
+	line_info = {}
+	if line_names:
+		for line in frappe.get_all(
+			"Sales Order Item",
+			filters={"name": ["in", list(line_names)]},
+			fields=["name", "custom_order_spec", "custom_color", "custom_material", "custom_heat_treatment", "custom_order_weight"],
+		):
+			line_info[line.name] = line
+
 	for row in rows:
 		row["customer_name"] = customer_names.get(row.sales_order)
+		line = line_info.get(row.sales_order_item, {})
+		row["spec"] = line.get("custom_order_spec")
+		row["color"] = line.get("custom_color")
+		row["material"] = line.get("custom_material")
+		row["heat_treatment"] = line.get("custom_heat_treatment")
+		row["weight"] = line.get("custom_order_weight")
 		job = frappe.get_all(
 			"Extrusion Job",
 			filters={"work_order": row.name},

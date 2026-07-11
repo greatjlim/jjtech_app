@@ -82,7 +82,20 @@ export async function listSalesOrders(
   return { items: listRes.data, total: countRes.message }
 }
 
-const LINE_FIELDS = ['name', 'item_code', 'item_name', 'custom_mold', 'qty', 'custom_order_spec', 'custom_order_weight', 'rate', 'amount']
+const LINE_FIELDS = [
+  'name',
+  'item_code',
+  'item_name',
+  'custom_mold',
+  'qty',
+  'custom_order_spec',
+  'custom_order_weight',
+  'custom_color',
+  'custom_material',
+  'custom_heat_treatment',
+  'rate',
+  'amount',
+]
 
 export interface SalesOrderItemListItem {
   name: string
@@ -92,6 +105,9 @@ export interface SalesOrderItemListItem {
   qty: number
   custom_order_spec: string | null
   custom_order_weight: number | null
+  custom_color: string | null
+  custom_material: string | null
+  custom_heat_treatment: string | null
   rate: number
   amount: number
 }
@@ -178,6 +194,9 @@ export interface SalesOrderFormLine {
   custom_mold: string
   custom_order_spec: string
   custom_order_weight: number
+  custom_color: string
+  custom_material: string
+  custom_heat_treatment: string
 }
 
 export interface SalesOrderFormState {
@@ -228,6 +247,9 @@ export function salesOrderDocToForm(doc: SalesOrderDoc, items: SalesOrderItemLis
       custom_mold: item.custom_mold ?? '',
       custom_order_spec: item.custom_order_spec ?? '',
       custom_order_weight: item.custom_order_weight ?? 0,
+      custom_color: item.custom_color ?? '',
+      custom_material: item.custom_material ?? '',
+      custom_heat_treatment: item.custom_heat_treatment ?? '',
     })),
   }
 }
@@ -239,6 +261,9 @@ export interface SalesOrderLineInput {
   custom_mold?: string
   custom_order_spec?: string
   custom_order_weight?: number
+  custom_color?: string
+  custom_material?: string
+  custom_heat_treatment?: string
 }
 
 export interface SalesOrderCreatePayload {
@@ -276,6 +301,9 @@ export function formToCreatePayload(form: SalesOrderFormState): SalesOrderCreate
       custom_mold: line.custom_mold || undefined,
       custom_order_spec: line.custom_order_spec || undefined,
       custom_order_weight: line.custom_order_weight || undefined,
+      custom_color: line.custom_color || undefined,
+      custom_material: line.custom_material || undefined,
+      custom_heat_treatment: line.custom_heat_treatment || undefined,
     })),
   }
 }

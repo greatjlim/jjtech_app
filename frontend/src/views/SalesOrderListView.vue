@@ -207,6 +207,9 @@ const lineColumnDefs: ColDef<SalesOrderItemListItem>[] = [
   { headerName: '형번', field: 'custom_mold', width: 140 },
   { headerName: '주문수량', field: 'qty', width: 100 },
   { headerName: '규격', field: 'custom_order_spec', width: 120 },
+  { headerName: '색상', field: 'custom_color', width: 100 },
+  { headerName: '재질', field: 'custom_material', width: 100 },
+  { headerName: '열처리방법', field: 'custom_heat_treatment', width: 130 },
   { headerName: '수주중량', field: 'custom_order_weight', width: 100 },
   {
     headerName: '단가',
