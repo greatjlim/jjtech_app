@@ -74,6 +74,12 @@ const router = createRouter({
           meta: { tabTitle: '주문관리', tabIcon: 'mdi-clipboard-text' },
         },
         {
+          path: 'purchase-orders',
+          name: 'purchase-orders',
+          component: () => import('@/views/PurchaseOrderListView.vue'),
+          meta: { tabTitle: '발주관리', tabIcon: 'mdi-cart-arrow-down' },
+        },
+        {
           path: 'work-orders',
           name: 'work-orders',
           component: () => import('@/views/WorkOrderListView.vue'),
