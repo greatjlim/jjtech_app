@@ -53,6 +53,10 @@ const logout = async () => {
     router.push('/login')
   }
 }
+
+const goHome = () => {
+  tabsActions.goHome(router)
+}
 </script>
 
 <template>
@@ -62,7 +66,7 @@ const logout = async () => {
       <v-btn icon variant="text" class="hidden-md-and-down" @click="rail = !rail">
         <v-icon>{{ rail ? 'mdi-menu-open' : 'mdi-menu' }}</v-icon>
       </v-btn>
-      <div class="text-h6 font-weight-bold font-italic ml-2">JJTech</div>
+      <div class="text-h6 font-weight-bold font-italic ml-2" style="cursor: pointer" @click="goHome">JJTech</div>
       <v-spacer />
       <v-btn icon variant="text" @click="toggleTheme">
         <v-icon>{{ isDark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>

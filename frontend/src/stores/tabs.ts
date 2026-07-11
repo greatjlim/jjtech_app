@@ -47,9 +47,18 @@ function closeTab(path: string, currentPath: string, router: Router): void {
   router.push(target.path)
 }
 
+// 로고 클릭 등 "홈으로" 이동. 대시보드로 이동한 뒤 열려있던 탭을 전부 비운다.
+// router.push가 먼저 끝나야 route.path 변경 감지(syncFromRoute)로 대시보드 탭이
+// 자동으로 다시 추가되는데, 그 뒤에 비워야 최종적으로 탭이 하나도 없는 상태가 된다.
+async function goHome(router: Router): Promise<void> {
+  await router.push('/dashboard')
+  state.tabs.splice(0, state.tabs.length)
+}
+
 export const tabsStore = readonly(state)
 
 export const tabsActions = {
   syncFromRoute,
   closeTab,
+  goHome,
 }
