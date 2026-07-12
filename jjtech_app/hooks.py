@@ -222,9 +222,13 @@ fixtures = [
 # Overriding Methods
 # ------------------------------
 #
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "jjtech_app.event.get_events"
-# }
+# changai(외부 앱, apps/changai에 로컬 클론, git으로 우리가 관리하지 않음)의
+# check_file_updates에 @frappe.whitelist()가 빠져있어 Desk의 ChangAI Settings
+# 화면에서 호출하면 실패한다. changai 소스를 직접 고치면 deploy/setup-changai.sh로
+# 재클론할 때 사라지므로, 여기서 우리 쪽 whitelisted 래퍼로 우회한다.
+override_whitelisted_methods = {
+	"changai.changai.api.v2.schema_utils.check_file_updates": "jjtech_app.jjtech_app.changai_overrides.check_file_updates",
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
