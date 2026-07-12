@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, shallowRef, watch } from 'vue'
 import { AgGridVue } from 'ag-grid-vue3'
+import SearchDetailPanel from '@/components/SearchDetailPanel.vue'
 import {
   AllCommunityModule,
   ModuleRegistry,
@@ -280,27 +281,22 @@ const defaultColDef = { cellClass: ['d-flex', 'align-center'] }
           <v-text-field v-model="searchQuery" prepend-inner-icon="mdi-magnify" label="검색..." hide-details color="primary" />
         </v-col>
       </v-row>
-      <v-row>
-        <v-col cols="12">
-          <v-btn variant="text" color="primary" @click="showAdvanced = !showAdvanced">
-            상세검색 {{ showAdvanced ? '접기' : '펼치기' }}
-          </v-btn>
-        </v-col>
-      </v-row>
-      <v-row v-if="showAdvanced">
-        <v-col cols="12" md="6" lg="3">
-          <v-text-field v-model="orderDateStart" type="date" label="주문일자(시작)" variant="outlined" density="comfortable" />
-        </v-col>
-        <v-col cols="12" md="6" lg="3">
-          <v-text-field v-model="orderDateEnd" type="date" label="주문일자(종료)" variant="outlined" density="comfortable" />
-        </v-col>
-        <v-col cols="12" md="6" lg="3">
-          <v-text-field v-model="deliveryDateStart" type="date" label="납기일자(시작)" variant="outlined" density="comfortable" />
-        </v-col>
-        <v-col cols="12" md="6" lg="3">
-          <v-text-field v-model="deliveryDateEnd" type="date" label="납기일자(종료)" variant="outlined" density="comfortable" />
-        </v-col>
-      </v-row>
+      <SearchDetailPanel v-model="showAdvanced">
+        <v-row>
+          <v-col cols="12" md="6" lg="3">
+            <v-text-field v-model="orderDateStart" type="date" label="주문일자(시작)" variant="outlined" density="comfortable" />
+          </v-col>
+          <v-col cols="12" md="6" lg="3">
+            <v-text-field v-model="orderDateEnd" type="date" label="주문일자(종료)" variant="outlined" density="comfortable" />
+          </v-col>
+          <v-col cols="12" md="6" lg="3">
+            <v-text-field v-model="deliveryDateStart" type="date" label="납기일자(시작)" variant="outlined" density="comfortable" />
+          </v-col>
+          <v-col cols="12" md="6" lg="3">
+            <v-text-field v-model="deliveryDateEnd" type="date" label="납기일자(종료)" variant="outlined" density="comfortable" />
+          </v-col>
+        </v-row>
+      </SearchDetailPanel>
 
       <v-row>
         <v-col cols="12" class="d-flex align-center justify-space-between">

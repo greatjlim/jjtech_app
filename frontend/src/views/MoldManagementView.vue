@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, shallowRef, watch } from 'vue'
 import { AgGridVue } from 'ag-grid-vue3'
+import SearchDetailPanel from '@/components/SearchDetailPanel.vue'
 import {
   AllCommunityModule,
   ModuleRegistry,
@@ -282,45 +283,40 @@ const defaultColDef = { cellClass: ['d-flex', 'align-center'] }
           <v-text-field v-model="searchQuery" prepend-inner-icon="mdi-magnify" label="검색..." hide-details color="primary" />
         </v-col>
       </v-row>
-      <v-row>
-        <v-col cols="12">
-          <v-btn variant="text" color="primary" @click="showAdvanced = !showAdvanced">
-            상세검색 {{ showAdvanced ? '접기' : '펼치기' }}
-          </v-btn>
-        </v-col>
-      </v-row>
-      <v-row v-if="showAdvanced">
-        <v-col cols="12" md="6" lg="3">
-          <v-autocomplete
-            v-model="selectedPurposes"
-            :items="purposeOptions"
-            label="용도구분"
-            multiple
-            closable-chips
-            chips
-            variant="outlined"
-            density="comfortable"
-          />
-        </v-col>
-        <v-col cols="12" md="6" lg="3">
-          <v-autocomplete
-            v-model="selectedOrderTypes"
-            :items="orderTypeOptions"
-            label="금형유형"
-            multiple
-            closable-chips
-            chips
-            variant="outlined"
-            density="comfortable"
-          />
-        </v-col>
-        <v-col cols="12" md="6" lg="3">
-          <v-text-field v-model="registerStartDate" type="date" label="등록일자(시작)" variant="outlined" density="comfortable" />
-        </v-col>
-        <v-col cols="12" md="6" lg="3">
-          <v-text-field v-model="registerEndDate" type="date" label="등록일자(종료)" variant="outlined" density="comfortable" />
-        </v-col>
-      </v-row>
+      <SearchDetailPanel v-model="showAdvanced">
+        <v-row>
+          <v-col cols="12" md="6" lg="3">
+            <v-autocomplete
+              v-model="selectedPurposes"
+              :items="purposeOptions"
+              label="용도구분"
+              multiple
+              closable-chips
+              chips
+              variant="outlined"
+              density="comfortable"
+            />
+          </v-col>
+          <v-col cols="12" md="6" lg="3">
+            <v-autocomplete
+              v-model="selectedOrderTypes"
+              :items="orderTypeOptions"
+              label="금형유형"
+              multiple
+              closable-chips
+              chips
+              variant="outlined"
+              density="comfortable"
+            />
+          </v-col>
+          <v-col cols="12" md="6" lg="3">
+            <v-text-field v-model="registerStartDate" type="date" label="등록일자(시작)" variant="outlined" density="comfortable" />
+          </v-col>
+          <v-col cols="12" md="6" lg="3">
+            <v-text-field v-model="registerEndDate" type="date" label="등록일자(종료)" variant="outlined" density="comfortable" />
+          </v-col>
+        </v-row>
+      </SearchDetailPanel>
 
       <v-row>
         <v-col cols="12" class="d-flex align-center justify-space-between">

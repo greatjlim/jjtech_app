@@ -16,6 +16,8 @@ const jjtechTheme: ThemeDefinition = {
     error: '#FA896B',
     background: '#eef5f9',
     surface: '#ffffff',
+    textSecondary: '#2A3547',
+    borderColor: '#e5eaef',
   },
 }
 
@@ -31,6 +33,8 @@ const jjtechDarkTheme: ThemeDefinition = {
     error: '#FA896B',
     background: '#2a3447',
     surface: '#2a3447',
+    textSecondary: '#7C8FAC',
+    borderColor: '#333F55',
   },
 }
 
