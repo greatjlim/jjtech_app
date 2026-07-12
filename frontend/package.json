@@ -12,8 +12,10 @@
     "@mdi/font": "^7.4.47",
     "ag-grid-community": "^33.3.2",
     "ag-grid-vue3": "^33.3.2",
+    "apexcharts": "^5.16.0",
     "vue": "^3.5.39",
     "vue-router": "^4.6.4",
+    "vue3-apexcharts": "^1.11.1",
     "vuetify": "^3.12.9"
   },
   "devDependencies": {

@@ -31,7 +31,6 @@ const router = createRouter({
           path: 'dashboard',
           name: 'dashboard',
           component: () => import('@/views/DashboardView.vue'),
-          meta: { tabTitle: '대시보드', tabIcon: 'mdi-view-dashboard' },
         },
         {
           path: 'companies',
