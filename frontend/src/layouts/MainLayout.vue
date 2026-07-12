@@ -8,6 +8,7 @@ import { permissionsActions } from '@/stores/permissions'
 import { getMyTheme, setMyTheme } from '@/api/theme'
 import { THEME_DARK, THEME_LIGHT } from '@/plugins/vuetify'
 import TabStrip from '@/components/TabStrip.vue'
+import ChatWidget from '@/components/chat/ChatWidget.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -272,5 +273,7 @@ const goHome = () => {
         </router-view>
       </v-container>
     </v-main>
+
+    <ChatWidget />
   </v-app>
 </template>
