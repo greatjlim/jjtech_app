@@ -113,6 +113,20 @@ bind mount)으로 메인 스택에 설치한다.
 무조건 import하는 구조라 격리 자체가 의미 없다는 걸 확인하고 포기했다 — 어차피
 사이트를 서빙하는 모든 컨테이너에 그 무게가 실린다.
 
+**jjtech_app은 changAI 원본에 있는 버그 몇 개를 자동으로 패치한다** (changAI
+소스는 우리 저장소가 아니라 직접 고치지 않고, `jjtech_app/hooks.py` +
+`jjtech_app/jjtech_app/changai_overrides.py`에서 런타임에 우회한다):
+
+- `check_file_updates`에 `@frappe.whitelist()`가 빠져있어 Desk의 ChangAI
+  Settings 화면 일부 기능이 "not whitelisted" 에러로 실패하던 문제
+- 하드코딩된 Gemini 모델(`gemini-2.5-flash-lite`)이 신규 API 키에서 지원
+  종료된 문제 (`gemini-2.5-flash`로 교체)
+- 질문 분류기가 영어 전용 키워드 사전을 써서 한글 질문을 전부 "ERP 아님"으로
+  오분류하던 문제 (한글이 섞인 질문은 곧바로 ERP 질문으로 판단하도록 우회)
+
+이 패치들은 jjtech_app이 changAI와 같은 사이트에 설치돼있기만 하면 자동으로
+적용된다 — 별도로 다시 적용할 게 없다.
+
 ```bash
 apps/jjtech_app/deploy/setup-changai.sh
 ```
