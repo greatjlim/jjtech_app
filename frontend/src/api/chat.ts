@@ -6,8 +6,11 @@ import { apiPost } from './client'
 const PIPELINE_METHOD = 'changai.changai.api.v2.text2sql_pipeline_v2.run_text2sql_pipeline'
 
 export interface ChatPipelineResult {
-  Bot?: string
-  SQL?: string
+  // 응답 경로에 따라 모양이 다르다: 잡담/비ERP 경로는 문자열을 그대로 주고,
+  // SQL 파이프라인을 탄 경로는 { answer: "..." } 객체를 준다.
+  Bot?: string | { answer?: string }
+  'Cleaned SQL'?: string
+  'Model returned SQL'?: string
   Fields?: string
   Tables?: string[]
   EntityDebug?: unknown
@@ -30,6 +33,17 @@ export async function runChatQuery(userQuestion: string, chatId: string): Promis
     sendNonErptoAI: false,
   })
   return res.message
+}
+
+export function extractBotText(result: ChatPipelineResult): string {
+  const bot = result.Bot
+  if (typeof bot === 'string' && bot) return bot
+  if (bot && typeof bot === 'object' && typeof bot.answer === 'string') return bot.answer
+  return '답변을 받지 못했습니다.'
+}
+
+export function extractSql(result: ChatPipelineResult): string | undefined {
+  return result['Cleaned SQL'] || result['Model returned SQL']
 }
 
 export function newChatId(): string {

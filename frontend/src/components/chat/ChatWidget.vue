@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nextTick, ref } from 'vue'
-import { newChatId, runChatQuery } from '@/api/chat'
+import { extractBotText, extractSql, newChatId, runChatQuery } from '@/api/chat'
 import { ApiError } from '@/api/client'
 
 interface ChatMessage {
@@ -34,7 +34,7 @@ const send = async () => {
   await scrollToBottom()
   try {
     const result = await runChatQuery(text, chatId)
-    messages.value.push({ role: 'bot', text: result.Bot ?? '답변을 받지 못했습니다.', sql: result.SQL })
+    messages.value.push({ role: 'bot', text: extractBotText(result), sql: extractSql(result) })
   } catch (e) {
     messages.value.push({
       role: 'error',
