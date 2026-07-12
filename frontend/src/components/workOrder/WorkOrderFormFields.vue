@@ -145,13 +145,12 @@ const lineLabel = (line: SalesOrderItemListItem) => `${line.item_name} (주문 $
       </LabelWithElement>
     </v-col>
     <v-col cols="12" md="6">
-      <LabelWithElement title="형번">
+      <LabelWithElement title="형번" required>
         <v-autocomplete
           v-model="form.custom_mold"
           :items="moldOptions"
           item-title="model_number"
           item-value="name"
-          clearable
           :disabled="readonly"
           variant="outlined"
           density="comfortable"

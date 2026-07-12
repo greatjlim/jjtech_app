@@ -29,8 +29,10 @@ class ExtrusionJob(Document):
 
 	def validate_mold_model(self):
 		wo_mold_model = frappe.db.get_value("Work Order", self.work_order, "custom_mold")
+		if not wo_mold_model:
+			frappe.throw(_("작업지시 {0}에 형번이 지정되어 있지 않습니다.").format(self.work_order))
 		mold_model = frappe.db.get_value("Mold", self.mold, "mold_model")
-		if wo_mold_model and mold_model != wo_mold_model:
+		if mold_model != wo_mold_model:
 			frappe.throw(_("금형 {0}은(는) 작업지시의 형번({1})과 일치하지 않습니다.").format(self.mold, wo_mold_model))
 
 	def validate_duplicate_in_progress(self):
