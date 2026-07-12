@@ -33,8 +33,14 @@ fixtures = [
 		"filters": [["name", "=", "Kiosk Worker"]],
 	},
 	{
+		# role 필터가 아니라 parent(문서타입) 필터를 쓴다. Custom DocPerm이 문서타입에
+		# 하나라도 생기면 Frappe는 그 문서타입의 표준 DocPerm을 전부 무시하고 Custom
+		# DocPerm에 있는 것만 유효 권한으로 취급하므로(추가가 아니라 대체), Kiosk Worker
+		# 권한을 얹으면서 같이 넣어준 원래 역할(Manufacturing User 등) 권한도 반드시 함께
+		# export/커밋되어야 한다. role 필터로는 그 행들이 빠져서 fixture만으로는
+		# 재현되지 않는 권한 회귀가 생긴다.
 		"doctype": "Custom DocPerm",
-		"filters": [["role", "=", "Kiosk Worker"]],
+		"filters": [["parent", "in", ["Work Order", "Workstation"]]],
 	},
 ]
 
