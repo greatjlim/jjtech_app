@@ -4,6 +4,7 @@ import { useTheme } from 'vuetify'
 import { useRoute, useRouter } from 'vue-router'
 import { authStore, authActions } from '@/stores/auth'
 import { tabsActions } from '@/stores/tabs'
+import { permissionsActions } from '@/stores/permissions'
 import { getMyTheme, setMyTheme } from '@/api/theme'
 import { THEME_DARK, THEME_LIGHT } from '@/plugins/vuetify'
 import TabStrip from '@/components/TabStrip.vue'
@@ -22,6 +23,7 @@ const openGroups = ref<Record<string, boolean>>({
   영업: true,
   생산: true,
   재고: true,
+  설정: true,
 })
 const toggleGroup = (name: string) => {
   openGroups.value[name] = !openGroups.value[name]
@@ -96,11 +98,41 @@ const goHome = () => {
         />
         <v-expand-transition>
           <div v-show="openGroups['기준정보']">
-            <v-list-item to="/companies" prepend-icon="mdi-domain" title="회사 관리" :class="!rail ? 'pl-8' : ''" />
-            <v-list-item to="/customers" prepend-icon="mdi-account-group" title="거래처 관리" :class="!rail ? 'pl-8' : ''" />
-            <v-list-item to="/suppliers" prepend-icon="mdi-account-hard-hat" title="공급업체관리" :class="!rail ? 'pl-8' : ''" />
-            <v-list-item to="/items" prepend-icon="mdi-cube-outline" title="물품관리" :class="!rail ? 'pl-8' : ''" />
-            <v-list-item to="/molds" prepend-icon="mdi-hammer-wrench" title="금형관리" :class="!rail ? 'pl-8' : ''" />
+            <v-list-item
+              v-if="permissionsActions.canAccess('companies')"
+              to="/companies"
+              prepend-icon="mdi-domain"
+              title="회사 관리"
+              :class="!rail ? 'pl-8' : ''"
+            />
+            <v-list-item
+              v-if="permissionsActions.canAccess('customers')"
+              to="/customers"
+              prepend-icon="mdi-account-group"
+              title="거래처 관리"
+              :class="!rail ? 'pl-8' : ''"
+            />
+            <v-list-item
+              v-if="permissionsActions.canAccess('suppliers')"
+              to="/suppliers"
+              prepend-icon="mdi-account-hard-hat"
+              title="공급업체관리"
+              :class="!rail ? 'pl-8' : ''"
+            />
+            <v-list-item
+              v-if="permissionsActions.canAccess('items')"
+              to="/items"
+              prepend-icon="mdi-cube-outline"
+              title="물품관리"
+              :class="!rail ? 'pl-8' : ''"
+            />
+            <v-list-item
+              v-if="permissionsActions.canAccess('molds')"
+              to="/molds"
+              prepend-icon="mdi-hammer-wrench"
+              title="금형관리"
+              :class="!rail ? 'pl-8' : ''"
+            />
           </div>
         </v-expand-transition>
 
@@ -111,8 +143,20 @@ const goHome = () => {
         />
         <v-expand-transition>
           <div v-show="openGroups['영업']">
-            <v-list-item to="/sales-orders" prepend-icon="mdi-clipboard-text" title="주문관리" :class="!rail ? 'pl-8' : ''" />
-            <v-list-item to="/shipments" prepend-icon="mdi-truck-delivery" title="출고관리" :class="!rail ? 'pl-8' : ''" />
+            <v-list-item
+              v-if="permissionsActions.canAccess('sales-orders')"
+              to="/sales-orders"
+              prepend-icon="mdi-clipboard-text"
+              title="주문관리"
+              :class="!rail ? 'pl-8' : ''"
+            />
+            <v-list-item
+              v-if="permissionsActions.canAccess('shipments')"
+              to="/shipments"
+              prepend-icon="mdi-truck-delivery"
+              title="출고관리"
+              :class="!rail ? 'pl-8' : ''"
+            />
           </div>
         </v-expand-transition>
 
@@ -123,7 +167,13 @@ const goHome = () => {
         />
         <v-expand-transition>
           <div v-show="openGroups['생산']">
-            <v-list-item to="/work-orders" prepend-icon="mdi-factory" title="작업지시" :class="!rail ? 'pl-8' : ''" />
+            <v-list-item
+              v-if="permissionsActions.canAccess('work-orders')"
+              to="/work-orders"
+              prepend-icon="mdi-factory"
+              title="작업지시"
+              :class="!rail ? 'pl-8' : ''"
+            />
           </div>
         </v-expand-transition>
 
@@ -134,13 +184,53 @@ const goHome = () => {
         />
         <v-expand-transition>
           <div v-show="openGroups['재고']">
-            <v-list-item to="/purchase-orders" prepend-icon="mdi-cart-arrow-down" title="발주관리" :class="!rail ? 'pl-8' : ''" />
-            <v-list-item to="/purchase-receipts" prepend-icon="mdi-package-variant-closed" title="입고관리" :class="!rail ? 'pl-8' : ''" />
-            <v-list-item to="/stock" prepend-icon="mdi-warehouse" title="재고관리" :class="!rail ? 'pl-8' : ''" />
+            <v-list-item
+              v-if="permissionsActions.canAccess('purchase-orders')"
+              to="/purchase-orders"
+              prepend-icon="mdi-cart-arrow-down"
+              title="발주관리"
+              :class="!rail ? 'pl-8' : ''"
+            />
+            <v-list-item
+              v-if="permissionsActions.canAccess('purchase-receipts')"
+              to="/purchase-receipts"
+              prepend-icon="mdi-package-variant-closed"
+              title="입고관리"
+              :class="!rail ? 'pl-8' : ''"
+            />
+            <v-list-item
+              v-if="permissionsActions.canAccess('stock')"
+              to="/stock"
+              prepend-icon="mdi-warehouse"
+              title="재고관리"
+              :class="!rail ? 'pl-8' : ''"
+            />
           </div>
         </v-expand-transition>
 
-        <!-- 설정: 화면 추가되면 여기에 위와 동일한 패턴(헤더 v-list-item + openGroups['설정'] 토글)으로 추가 -->
+        <v-list-item
+          :prepend-icon="openGroups['설정'] ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+          title="설정"
+          @click="toggleGroup('설정')"
+        />
+        <v-expand-transition>
+          <div v-show="openGroups['설정']">
+            <v-list-item
+              v-if="permissionsActions.canAccess('users')"
+              to="/users"
+              prepend-icon="mdi-account-cog"
+              title="사용자관리"
+              :class="!rail ? 'pl-8' : ''"
+            />
+            <v-list-item
+              v-if="permissionsActions.canAccess('role-assignment')"
+              to="/role-assignment"
+              prepend-icon="mdi-shield-account"
+              title="권한관리"
+              :class="!rail ? 'pl-8' : ''"
+            />
+          </div>
+        </v-expand-transition>
       </v-list>
 
       <template #append>

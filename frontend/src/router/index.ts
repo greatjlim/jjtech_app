@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { authStore, authActions } from '@/stores/auth'
+import { permissionsStore, permissionsActions } from '@/stores/permissions'
+import { SCREEN_KEYS } from '@/api/screenPermission'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -103,6 +105,18 @@ const router = createRouter({
           component: () => import('@/views/StockListView.vue'),
           meta: { tabTitle: '재고관리', tabIcon: 'mdi-warehouse' },
         },
+        {
+          path: 'users',
+          name: 'users',
+          component: () => import('@/views/UserListView.vue'),
+          meta: { tabTitle: '사용자관리', tabIcon: 'mdi-account-cog' },
+        },
+        {
+          path: 'role-assignment',
+          name: 'role-assignment',
+          component: () => import('@/views/RoleAssignmentView.vue'),
+          meta: { tabTitle: '권한관리', tabIcon: 'mdi-shield-account' },
+        },
       ],
     },
     {
@@ -140,9 +154,18 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   if (!authStore.ready) {
     authActions.checkSession()
+  }
+
+  // 로그아웃은 항상 /login(guestOnly)으로 이동하는데, 그 라우트는 requiresAuth가
+  // 아니라서 아래 분기들을 안 타고 지나간다. 그 상태로 새로고침 없이 다른 계정으로
+  // 로그인하면 이전 계정의 permissionsStore(ready=true)가 그대로 남아, 방금
+  // 로그인한 계정에도 이전 계정의 화면 권한이 적용되는 문제가 있었다. 그래서
+  // 인증 안 된 상태를 발견하는 즉시(목적지 라우트와 무관하게) 리셋한다.
+  if (!authStore.isAuthenticated && permissionsStore.ready) {
+    permissionsActions.reset()
   }
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
@@ -151,6 +174,15 @@ router.beforeEach((to) => {
 
   if (to.meta.guestOnly && authStore.isAuthenticated) {
     return { path: '/' }
+  }
+
+  if (to.meta.requiresAuth && authStore.isAuthenticated) {
+    if (!permissionsStore.ready) {
+      await permissionsActions.load()
+    }
+    if (typeof to.name === 'string' && SCREEN_KEYS.includes(to.name) && !permissionsActions.canAccess(to.name)) {
+      return { path: '/dashboard' }
+    }
   }
 })
 
