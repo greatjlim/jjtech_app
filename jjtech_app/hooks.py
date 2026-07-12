@@ -185,6 +185,13 @@ fixtures = [
 # 	}
 # }
 
+# Session Events
+# --------------
+# 로그인마다 changai의 하드코딩된 Gemini 모델 상수를 패치한다 (자세한 사유는
+# jjtech_app.jjtech_app.changai_overrides.patch_gemini_model 참고). site
+# 컨텍스트가 보장되는 시점이라 부팅 초기보다 여기서 해야 안전하다.
+on_session_creation = ["jjtech_app.jjtech_app.changai_overrides.patch_gemini_model"]
+
 # Scheduled Tasks
 # ---------------
 
