@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import LabelWithElement from '@/components/LabelWithElement.vue'
+import PickerField from '@/components/PickerField.vue'
 import SalesOrderLineDialog from './SalesOrderLineDialog.vue'
-import { listCustomers } from '@/api/customer'
+import { getCustomer, listCustomers } from '@/api/customer'
 import type { SalesOrderFormLine, SalesOrderFormState } from '@/api/salesOrder'
 
 withDefaults(
@@ -13,13 +14,15 @@ withDefaults(
 )
 
 const form = defineModel<SalesOrderFormState>({ required: true })
+const customerLabel = ref('')
 
-const customerOptions = ref<{ name: string; customer_name: string }[]>([])
-
-onMounted(async () => {
-  const { items } = await listCustomers('', 0, 100)
-  customerOptions.value = items
-})
+const searchCustomers = (search: string) => listCustomers(search, 0, 50).then((r) => r.items)
+const resolveCustomer = (id: string) => getCustomer(id).catch(() => null)
+const customerColumns = [
+  { key: 'customer_name', title: '거래처명' },
+  { key: 'custom_representative_name', title: '대표자' },
+  { key: 'custom_phone_number', title: '전화번호' },
+]
 
 const showLineDialog = ref(false)
 
@@ -36,14 +39,16 @@ const removeLine = (index: number) => {
   <v-row>
     <v-col cols="12" md="6">
       <LabelWithElement title="수주처" required>
-        <v-autocomplete
+        <PickerField
           v-model="form.customer"
-          :items="customerOptions"
-          item-title="customer_name"
+          v-model:display-text="customerLabel"
+          dialog-title="고객사 선택"
+          :search-fn="searchCustomers"
+          :resolve-fn="resolveCustomer"
+          :columns="customerColumns"
           item-value="name"
+          item-label="customer_name"
           :disabled="readonly"
-          variant="outlined"
-          density="comfortable"
         />
       </LabelWithElement>
     </v-col>

@@ -2,8 +2,9 @@
 import { ref, watch } from 'vue'
 import FormDialog from '@/components/FormDialog.vue'
 import LabelWithElement from '@/components/LabelWithElement.vue'
-import { searchItems, type ItemListItem } from '@/api/item'
-import { listCustomers, type CustomerListItem } from '@/api/customer'
+import PickerField from '@/components/PickerField.vue'
+import { searchItems } from '@/api/item'
+import { listCustomers } from '@/api/customer'
 import {
   listShippableSalesOrderItems,
   listShippablePackagings,
@@ -89,8 +90,16 @@ const addFromPkg = (row: ShippablePackaging) => {
 }
 
 // 직접입력
-const itemOptions = ref<ItemListItem[]>([])
-const customerOptions = ref<CustomerListItem[]>([])
+const searchCustomers = (search: string) => listCustomers(search, 0, 50).then((r) => r.items)
+const itemColumns = [
+  { key: 'item_name', title: '품명' },
+  { key: 'standard_rate', title: '표준단가' },
+]
+const customerColumns = [
+  { key: 'customer_name', title: '거래처명' },
+  { key: 'custom_representative_name', title: '대표자' },
+  { key: 'custom_phone_number', title: '전화번호' },
+]
 const manualItemCode = ref('')
 const manualItemName = ref('')
 const manualCustomer = ref('')
@@ -102,15 +111,6 @@ const manualMaterial = ref('')
 const manualHeatTreatment = ref('')
 const manualQty = ref(1)
 const manualWeight = ref(0)
-
-watch(manualItemCode, (code) => {
-  const found = itemOptions.value.find((i) => i.name === code)
-  manualItemName.value = found?.item_name ?? ''
-})
-watch(manualCustomer, (code) => {
-  const found = customerOptions.value.find((c) => c.name === code)
-  manualCustomerName.value = found?.customer_name ?? ''
-})
 
 const resetManual = () => {
   manualItemCode.value = ''
@@ -152,12 +152,7 @@ const init = async () => {
   soSearch.value = ''
   pkgSearch.value = ''
   resetManual()
-  ;[soResults.value, pkgResults.value, itemOptions.value, customerOptions.value] = await Promise.all([
-    listShippableSalesOrderItems(),
-    listShippablePackagings(),
-    searchItems(''),
-    listCustomers('', 0, 100).then((r) => r.items),
-  ])
+  ;[soResults.value, pkgResults.value] = await Promise.all([listShippableSalesOrderItems(), listShippablePackagings()])
 }
 
 watch(show, (newShow) => {
@@ -268,25 +263,27 @@ watch(show, (newShow) => {
         <v-row class="mt-1">
           <v-col cols="12" md="6">
             <LabelWithElement title="품명" required>
-              <v-autocomplete
+              <PickerField
                 v-model="manualItemCode"
-                :items="itemOptions"
-                item-title="item_name"
+                v-model:display-text="manualItemName"
+                dialog-title="품명 선택"
+                :search-fn="searchItems"
+                :columns="itemColumns"
                 item-value="name"
-                variant="outlined"
-                density="comfortable"
+                item-label="item_name"
               />
             </LabelWithElement>
           </v-col>
           <v-col cols="12" md="6">
             <LabelWithElement title="거래처" required>
-              <v-autocomplete
+              <PickerField
                 v-model="manualCustomer"
-                :items="customerOptions"
-                item-title="customer_name"
+                v-model:display-text="manualCustomerName"
+                dialog-title="고객사 선택"
+                :search-fn="searchCustomers"
+                :columns="customerColumns"
                 item-value="name"
-                variant="outlined"
-                density="comfortable"
+                item-label="customer_name"
               />
             </LabelWithElement>
           </v-col>

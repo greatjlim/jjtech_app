@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import LabelWithElement from '@/components/LabelWithElement.vue'
+import PickerField from '@/components/PickerField.vue'
 import PurchaseOrderLineDialog from './PurchaseOrderLineDialog.vue'
-import { listSuppliers } from '@/api/supplier'
+import { getSupplier, listSuppliers } from '@/api/supplier'
 import type { PurchaseOrderFormLine, PurchaseOrderFormState } from '@/api/purchaseOrder'
 
 withDefaults(
@@ -13,13 +14,15 @@ withDefaults(
 )
 
 const form = defineModel<PurchaseOrderFormState>({ required: true })
+const supplierLabel = ref('')
 
-const supplierOptions = ref<{ name: string; supplier_name: string }[]>([])
-
-onMounted(async () => {
-  const { items } = await listSuppliers('', 0, 100)
-  supplierOptions.value = items
-})
+const searchSuppliers = (search: string) => listSuppliers(search, 0, 50).then((r) => r.items)
+const resolveSupplier = (id: string) => getSupplier(id).catch(() => null)
+const supplierColumns = [
+  { key: 'supplier_name', title: '공급업체명' },
+  { key: 'custom_representative_name', title: '대표자' },
+  { key: 'custom_phone_number', title: '전화번호' },
+]
 
 const showLineDialog = ref(false)
 
@@ -36,14 +39,16 @@ const removeLine = (index: number) => {
   <v-row>
     <v-col cols="12" md="6">
       <LabelWithElement title="공급업체" required>
-        <v-autocomplete
+        <PickerField
           v-model="form.supplier"
-          :items="supplierOptions"
-          item-title="supplier_name"
+          v-model:display-text="supplierLabel"
+          dialog-title="공급업체 선택"
+          :search-fn="searchSuppliers"
+          :resolve-fn="resolveSupplier"
+          :columns="supplierColumns"
           item-value="name"
+          item-label="supplier_name"
           :disabled="readonly"
-          variant="outlined"
-          density="comfortable"
         />
       </LabelWithElement>
     </v-col>

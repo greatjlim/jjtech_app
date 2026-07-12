@@ -2,19 +2,18 @@
 import { computed, ref, watch } from 'vue'
 import FormDialog from '@/components/FormDialog.vue'
 import LabelWithElement from '@/components/LabelWithElement.vue'
+import PickerField from '@/components/PickerField.vue'
 import { searchItems, type ItemListItem } from '@/api/item'
-import { searchMoldModels, type MoldModelListItem } from '@/api/moldModel'
+import { searchMoldModels } from '@/api/moldModel'
 import type { SalesOrderFormLine } from '@/api/salesOrder'
 
 const show = defineModel<boolean>({ default: false })
 const emit = defineEmits<{ add: [line: SalesOrderFormLine] }>()
 
-const itemOptions = ref<ItemListItem[]>([])
-const moldOptions = ref<MoldModelListItem[]>([])
-
 const itemCode = ref('')
 const itemName = ref('')
 const moldName = ref('')
+const moldLabel = ref('')
 const orderSpec = ref('')
 const qty = ref(1)
 const orderWeight = ref(0)
@@ -25,10 +24,11 @@ const heatTreatment = ref('')
 
 const amount = computed(() => (qty.value || 0) * (rate.value || 0))
 
-const init = async () => {
+const init = () => {
   itemCode.value = ''
   itemName.value = ''
   moldName.value = ''
+  moldLabel.value = ''
   orderSpec.value = ''
   qty.value = 1
   orderWeight.value = 0
@@ -36,20 +36,28 @@ const init = async () => {
   color.value = ''
   material.value = ''
   heatTreatment.value = ''
-  ;[itemOptions.value, moldOptions.value] = await Promise.all([searchItems(''), searchMoldModels('')])
 }
 
 watch(show, (newShow) => {
   if (newShow) init()
 })
 
-watch(itemCode, (newItemCode) => {
-  const found = itemOptions.value.find((i) => i.name === newItemCode)
-  itemName.value = found?.item_name ?? ''
-  if (found?.standard_rate) {
-    rate.value = found.standard_rate
+const onItemSelect = (item: ItemListItem) => {
+  itemName.value = item.item_name
+  if (item.standard_rate) {
+    rate.value = item.standard_rate
   }
-})
+}
+
+const itemColumns = [
+  { key: 'item_name', title: '품명' },
+  { key: 'standard_rate', title: '표준단가' },
+]
+const moldColumns = [
+  { key: 'model_number', title: '형번' },
+  { key: 'vendor_model_number', title: '발주처형번' },
+  { key: 'purpose', title: '용도' },
+]
 
 const save = () => {
   emit('add', {
@@ -73,26 +81,29 @@ const save = () => {
     <v-row>
       <v-col cols="12" md="6">
         <LabelWithElement title="품명" required>
-          <v-autocomplete
+          <PickerField
             v-model="itemCode"
-            :items="itemOptions"
-            item-title="item_name"
+            v-model:display-text="itemName"
+            dialog-title="품명 선택"
+            :search-fn="searchItems"
+            :columns="itemColumns"
             item-value="name"
-            variant="outlined"
-            density="comfortable"
+            item-label="item_name"
+            @select="onItemSelect"
           />
         </LabelWithElement>
       </v-col>
       <v-col cols="12" md="6">
         <LabelWithElement title="형번">
-          <v-autocomplete
+          <PickerField
             v-model="moldName"
-            :items="moldOptions"
-            item-title="model_number"
+            v-model:display-text="moldLabel"
+            dialog-title="형번 선택"
+            :search-fn="searchMoldModels"
+            :columns="moldColumns"
             item-value="name"
+            item-label="model_number"
             clearable
-            variant="outlined"
-            density="comfortable"
           />
         </LabelWithElement>
       </v-col>

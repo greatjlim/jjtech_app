@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import LabelWithElement from '@/components/LabelWithElement.vue'
+import PickerField from '@/components/PickerField.vue'
 import { getMoldModelFieldOptions, type MoldModelDoc } from '@/api/moldModel'
-import { listCustomers } from '@/api/customer'
+import { getCustomer, listCustomers } from '@/api/customer'
 import { uploadFile } from '@/api/client'
 
 withDefaults(
@@ -22,7 +23,14 @@ const surfaceTreatmentMethodOptions = ref<string[]>([])
 const insulationDivisionOptions = ref<string[]>([])
 const partnerTypeOptions = ref<string[]>([])
 
-const customerOptions = ref<{ name: string; customer_name: string }[]>([])
+const vendorLabel = ref('')
+const searchCustomers = (search: string) => listCustomers(search, 0, 50).then((r) => r.items)
+const resolveCustomer = (id: string) => getCustomer(id).catch(() => null)
+const customerColumns = [
+  { key: 'customer_name', title: '거래처명' },
+  { key: 'custom_representative_name', title: '대표자' },
+  { key: 'custom_phone_number', title: '전화번호' },
+]
 
 const uploading = ref(false)
 const selectedDrawingFile = ref<File[]>([])
@@ -55,8 +63,6 @@ onMounted(async () => {
     getMoldModelFieldOptions('insulation_division'),
     getMoldModelFieldOptions('partner_type'),
   ])
-  const { items } = await listCustomers('', 0, 100)
-  customerOptions.value = items
 })
 </script>
 
@@ -82,13 +88,15 @@ onMounted(async () => {
     </v-col>
     <v-col cols="12" md="6">
       <LabelWithElement title="수주처" required>
-        <v-autocomplete
+        <PickerField
           v-model="form.vendor"
-          :items="customerOptions"
-          item-title="customer_name"
+          v-model:display-text="vendorLabel"
+          dialog-title="고객사 선택"
+          :search-fn="searchCustomers"
+          :resolve-fn="resolveCustomer"
+          :columns="customerColumns"
           item-value="name"
-          variant="outlined"
-          density="comfortable"
+          item-label="customer_name"
         />
       </LabelWithElement>
     </v-col>

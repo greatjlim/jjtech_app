@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import LabelWithElement from '@/components/LabelWithElement.vue'
-import { searchMoldModels, type MoldModelListItem } from '@/api/moldModel'
+import PickerField from '@/components/PickerField.vue'
+import { getMoldModel, searchMoldModels } from '@/api/moldModel'
 import { listSalesOrderItems, type SalesOrderItemListItem } from '@/api/salesOrder'
 import {
+  getSalesOrderOption,
   getWorkOrderedQty,
   listWorkstations,
   searchOpenSalesOrders,
@@ -21,19 +23,17 @@ const props = withDefaults(
 
 const form = defineModel<WorkOrderFormState>({ required: true })
 
-const salesOrderOptions = ref<SalesOrderOption[]>([])
 const lineOptions = ref<SalesOrderItemListItem[]>([])
-const moldOptions = ref<MoldModelListItem[]>([])
 const workstationOptions = ref<string[]>([])
 const remainingQty = ref<number | null>(null)
+const salesOrderLabel = ref('')
+const moldLabel = ref('')
 
 onMounted(async () => {
-  ;[salesOrderOptions.value, moldOptions.value, workstationOptions.value] = await Promise.all([
-    searchOpenSalesOrders(''),
-    searchMoldModels(''),
-    listWorkstations(),
-  ])
+  workstationOptions.value = await listWorkstations()
 })
+
+const resolveMold = (id: string) => getMoldModel(id).catch(() => null)
 
 // 수주가 바뀌면(등록 화면에서 사용자가 고르거나, 수정 화면에서 기존 값을 불러오거나) 그 수주의
 // 라인 목록을 다시 조회한다.
@@ -69,15 +69,14 @@ watch(
   { immediate: true },
 )
 
-// v-autocomplete/v-select는 사용자가 실제로 선택했을 때만 update:model-value를 emit하므로,
-// 수정 화면에서 기존 값을 프로그램적으로 채울 때는 이 핸들러가 실행되지 않는다(=기존에
+// PickerField는 실제로 선택(또는 프로그램적 clear)이 일어났을 때만 select를 emit하므로,
+// 수정 화면에서 기존 값을 resolveFn으로 채울 때는 이 핸들러가 실행되지 않는다(=기존에
 // 저장된 값을 덮어쓰지 않음).
-const onSalesOrderChange = () => {
+const onSalesOrderChange = (so: SalesOrderOption) => {
   form.value.sales_order_item = ''
   form.value.production_item = ''
   form.value.custom_mold = ''
-  const picked = salesOrderOptions.value.find((so) => so.name === form.value.sales_order)
-  form.value.expected_delivery_date = picked?.delivery_date ?? ''
+  form.value.expected_delivery_date = so.delivery_date ?? ''
 }
 
 const onLineChange = () => {
@@ -88,23 +87,34 @@ const onLineChange = () => {
   }
 }
 
-const soLabel = (so: SalesOrderOption) => `${so.name} (${so.customer_name})`
 const lineLabel = (line: SalesOrderItemListItem) => `${line.item_name} (주문 ${line.qty})`
+const soColumns = [
+  { key: 'name', title: '수주번호' },
+  { key: 'customer_name', title: '거래처' },
+  { key: 'delivery_date', title: '납기' },
+]
+const moldColumns = [
+  { key: 'model_number', title: '형번' },
+  { key: 'vendor_model_number', title: '발주처형번' },
+  { key: 'purpose', title: '용도' },
+]
 </script>
 
 <template>
   <v-row>
     <v-col cols="12" md="6">
       <LabelWithElement title="수주" required>
-        <v-autocomplete
+        <PickerField
           v-model="form.sales_order"
-          :items="salesOrderOptions"
-          :item-title="soLabel"
+          v-model:display-text="salesOrderLabel"
+          dialog-title="수주 선택"
+          :search-fn="searchOpenSalesOrders"
+          :resolve-fn="getSalesOrderOption"
+          :columns="soColumns"
           item-value="name"
+          item-label="name"
           :disabled="readonly"
-          variant="outlined"
-          density="comfortable"
-          @update:model-value="onSalesOrderChange"
+          @select="onSalesOrderChange"
         />
       </LabelWithElement>
     </v-col>
@@ -146,14 +156,16 @@ const lineLabel = (line: SalesOrderItemListItem) => `${line.item_name} (주문 $
     </v-col>
     <v-col cols="12" md="6">
       <LabelWithElement title="형번" required>
-        <v-autocomplete
+        <PickerField
           v-model="form.custom_mold"
-          :items="moldOptions"
-          item-title="model_number"
+          v-model:display-text="moldLabel"
+          dialog-title="형번 선택"
+          :search-fn="searchMoldModels"
+          :resolve-fn="resolveMold"
+          :columns="moldColumns"
           item-value="name"
+          item-label="model_number"
           :disabled="readonly"
-          variant="outlined"
-          density="comfortable"
         />
       </LabelWithElement>
     </v-col>

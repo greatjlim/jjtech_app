@@ -2,13 +2,12 @@
 import { computed, ref, watch } from 'vue'
 import FormDialog from '@/components/FormDialog.vue'
 import LabelWithElement from '@/components/LabelWithElement.vue'
-import { searchItems, type ItemListItem } from '@/api/item'
+import PickerField from '@/components/PickerField.vue'
+import { searchItems } from '@/api/item'
 import type { PurchaseOrderFormLine } from '@/api/purchaseOrder'
 
 const show = defineModel<boolean>({ default: false })
 const emit = defineEmits<{ add: [line: PurchaseOrderFormLine] }>()
-
-const itemOptions = ref<ItemListItem[]>([])
 
 const itemCode = ref('')
 const itemName = ref('')
@@ -18,23 +17,22 @@ const scheduleDate = ref('')
 
 const amount = computed(() => (qty.value || 0) * (rate.value || 0))
 
-const init = async () => {
+const init = () => {
   itemCode.value = ''
   itemName.value = ''
   qty.value = 1
   rate.value = 0
   scheduleDate.value = ''
-  itemOptions.value = await searchItems('')
 }
 
 watch(show, (newShow) => {
   if (newShow) init()
 })
 
-watch(itemCode, (newItemCode) => {
-  const found = itemOptions.value.find((i) => i.name === newItemCode)
-  itemName.value = found?.item_name ?? ''
-})
+const itemColumns = [
+  { key: 'item_name', title: '품명' },
+  { key: 'standard_rate', title: '표준단가' },
+]
 
 const save = () => {
   emit('add', {
@@ -53,13 +51,14 @@ const save = () => {
     <v-row>
       <v-col cols="12" md="6">
         <LabelWithElement title="품명" required>
-          <v-autocomplete
+          <PickerField
             v-model="itemCode"
-            :items="itemOptions"
-            item-title="item_name"
+            v-model:display-text="itemName"
+            dialog-title="품명 선택"
+            :search-fn="searchItems"
+            :columns="itemColumns"
             item-value="name"
-            variant="outlined"
-            density="comfortable"
+            item-label="item_name"
           />
         </LabelWithElement>
       </v-col>

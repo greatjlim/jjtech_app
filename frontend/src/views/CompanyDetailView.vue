@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import { getCompany, updateCompany, type CompanyDoc, type CompanyUpdatePayload } from '@/api/company'
+import { useRoute, useRouter } from 'vue-router'
+import { deleteCompany, getCompany, updateCompany, type CompanyDoc, type CompanyUpdatePayload } from '@/api/company'
 import { ApiError } from '@/api/client'
 import LabelWithElement from '@/components/LabelWithElement.vue'
 
 const route = useRoute()
+const router = useRouter()
 const name = route.params.name as string
 
 const loading = ref(true)
 const saving = ref(false)
+const deleting = ref(false)
 
 const form = reactive<CompanyDoc>({
   name: '',
@@ -64,6 +66,21 @@ const save = async () => {
   } finally {
     saving.value = false
     snackbar.value = true
+  }
+}
+
+const remove = async () => {
+  if (!window.confirm('회사 정보를 삭제하시겠습니까?')) return
+  deleting.value = true
+  try {
+    await deleteCompany(name)
+    router.push('/companies')
+  } catch (e) {
+    snackbarColor.value = 'error'
+    snackbarText.value = e instanceof ApiError ? e.message : '삭제에 실패했습니다.'
+    snackbar.value = true
+  } finally {
+    deleting.value = false
   }
 }
 </script>
@@ -145,6 +162,7 @@ const save = async () => {
     </v-card-text>
     <v-divider />
     <v-card-actions>
+      <v-btn color="error" variant="text" :loading="deleting" @click="remove">삭제</v-btn>
       <v-spacer />
       <v-btn color="error" variant="text" to="/companies">취소</v-btn>
       <v-btn color="success" variant="text" :loading="saving" @click="save">저장</v-btn>

@@ -259,6 +259,19 @@ export async function searchOpenSalesOrders(search = '', limit = 50): Promise<Sa
   return res.data
 }
 
+// PickerField의 resolveFn용 — 상태(마감/취소 등)와 무관하게 단건 조회한다.
+export async function getSalesOrderOption(name: string): Promise<SalesOrderOption | null> {
+  const params = new URLSearchParams({ fields: JSON.stringify(['name', 'customer_name', 'delivery_date']) })
+  try {
+    const res = await apiGet<DocResponse<SalesOrderOption>>(
+      `/resource/Sales%20Order/${encodeURIComponent(name)}?${params.toString()}`,
+    )
+    return res.data
+  } catch {
+    return null
+  }
+}
+
 // 이미 이 수주 라인 품목으로 제출된 작업지시 수량 합계. 서버(Work Order.validate_work_order_against_so)가
 // 최종 검증을 하지만, 화면에서 잔여수량을 미리 보여주기 위해 같은 방식으로 계산한다.
 export async function getWorkOrderedQty(salesOrder: string, itemCode: string, excludeName?: string): Promise<number> {

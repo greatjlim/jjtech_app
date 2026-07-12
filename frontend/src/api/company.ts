@@ -1,4 +1,4 @@
-import { apiGet, apiPut } from './client'
+import { apiDelete, apiGet, apiPut } from './client'
 
 const LIST_FIELDS = ['name', 'company_name', 'abbr', 'tax_id', 'phone_no', 'country']
 
@@ -57,4 +57,8 @@ export async function getCompany(name: string): Promise<CompanyDoc> {
 export async function updateCompany(name: string, patch: CompanyUpdatePayload): Promise<CompanyDoc> {
   const res = await apiPut<DocResponse<CompanyDoc>>(`/resource/Company/${encodeURIComponent(name)}`, patch)
   return res.data
+}
+
+export async function deleteCompany(name: string): Promise<void> {
+  await apiDelete(`/resource/Company/${encodeURIComponent(name)}`)
 }
