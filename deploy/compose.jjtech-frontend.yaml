@@ -1,0 +1,15 @@
+# jjtech_app 프론트엔드(빌드된 dist/)를 서빙하는 nginx.
+# ERPNext 자체의 frontend(Desk용 nginx, 8080)와는 별개 서비스다.
+# network_mode: host로 떠서 host의 8080(ERPNext)을 127.0.0.1로 바로 proxy_pass한다 -
+# frappe_docker의 내부 docker network에 별도로 join할 필요가 없다.
+#
+# 사용법: __WORKSPACE_DIR__를 실제 워크스페이스 절대경로로 치환해서
+# frappe_docker/overrides/에 복사.
+services:
+  jjtech-frontend:
+    image: nginx:alpine
+    network_mode: host
+    volumes:
+      - __WORKSPACE_DIR__/apps/jjtech_app/frontend/dist:/usr/share/nginx/html:ro
+      - __WORKSPACE_DIR__/apps/jjtech_app/deploy/nginx-frontend.conf:/etc/nginx/conf.d/default.conf:ro
+    restart: unless-stopped
