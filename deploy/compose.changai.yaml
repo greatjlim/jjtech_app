@@ -1,0 +1,50 @@
+# changAI(github.com/ERPGulf/changai, MIT) 설치용 override 템플릿.
+#
+# changAI는 로그인마다(on_session_creation) transformers/faiss/langchain 등
+# 무거운 RAG 스택을 무조건 import하는 구조라, 별도 컨테이너로 자원을 격리해도
+# 결국 사이트를 서빙하는 모든 컨테이너에 그 무게가 실린다(확인된 사실 —
+# frappe_docker/overrides/compose.changai.yaml 작업 이력 참고). 그래서 격리를
+# 포기하고 jjtech_app과 완전히 동일한 방식으로 6개 서비스 전부에 bind mount해서
+# 메인 스택에 정석대로(bench install-app) 설치한다.
+#
+# 이 파일은 apps/changai가 __WORKSPACE_DIR__ 자리에 클론돼 있다고 가정한 템플릿이다.
+# setup-changai.sh가 실제 워크스페이스 경로로 치환해서
+# frappe_docker/overrides/compose.changai.yaml에 복사한다. 손으로 쓴다면
+# __WORKSPACE_DIR__을 워크스페이스 절대경로(예: /home/user/erpnext-workspace)로
+# 바꾸면 된다.
+services:
+  backend:
+    volumes:
+      - type: bind
+        source: __WORKSPACE_DIR__/apps/changai
+        target: /home/frappe/frappe-bench/apps/changai
+
+  frontend:
+    volumes:
+      - type: bind
+        source: __WORKSPACE_DIR__/apps/changai
+        target: /home/frappe/frappe-bench/apps/changai
+
+  websocket:
+    volumes:
+      - type: bind
+        source: __WORKSPACE_DIR__/apps/changai
+        target: /home/frappe/frappe-bench/apps/changai
+
+  queue-long:
+    volumes:
+      - type: bind
+        source: __WORKSPACE_DIR__/apps/changai
+        target: /home/frappe/frappe-bench/apps/changai
+
+  queue-short:
+    volumes:
+      - type: bind
+        source: __WORKSPACE_DIR__/apps/changai
+        target: /home/frappe/frappe-bench/apps/changai
+
+  scheduler:
+    volumes:
+      - type: bind
+        source: __WORKSPACE_DIR__/apps/changai
+        target: /home/frappe/frappe-bench/apps/changai
