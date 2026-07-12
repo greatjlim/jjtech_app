@@ -24,24 +24,51 @@ const MENU = [
 
 <template>
   <v-row justify="center" class="mt-2">
-    <v-col v-for="ws in workstations" :key="ws" cols="12" sm="6" md="4" lg="3">
-      <div class="text-h5 font-weight-bold text-center py-3 mb-4 rounded" style="background: linear-gradient(to right, #1e5fa8, #4a90d9); color: white">
-        {{ ws }}
-      </div>
-      <v-btn
-        v-for="item in MENU"
-        :key="item.label"
-        block
-        size="x-large"
-        height="72"
-        color="primary"
-        variant="outlined"
-        class="mb-3"
-        @click="goTo(ws, item.path)"
-      >
-        <v-icon start size="28">{{ item.icon }}</v-icon>
-        {{ item.label }}
-      </v-btn>
+    <v-col v-for="ws in workstations" :key="ws" cols="12" lg="6" xl="4">
+      <v-card class="pa-5 h-100" elevation="6">
+        <div class="ws-title mb-5">
+          <v-icon size="36" color="primary">mdi-cog</v-icon>
+          {{ ws }}
+        </div>
+        <v-row dense>
+          <v-col v-for="item in MENU" :key="item.label" cols="6">
+            <v-card
+              class="menu-tile d-flex flex-column align-center justify-center text-center"
+              variant="outlined"
+              @click="goTo(ws, item.path)"
+            >
+              <v-icon size="60" color="primary">{{ item.icon }}</v-icon>
+              <div class="menu-tile-label mt-3">{{ item.label }}</div>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-card>
     </v-col>
   </v-row>
 </template>
+
+<style scoped>
+.ws-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 2rem;
+  font-weight: 800;
+}
+.menu-tile {
+  min-height: 200px;
+  border-width: 2px !important;
+  transition: transform 0.1s ease, border-color 0.1s ease;
+}
+.menu-tile:active {
+  transform: scale(0.97);
+  border-color: rgb(var(--v-theme-primary)) !important;
+}
+.menu-tile-label {
+  font-size: 1.4rem;
+  font-weight: 800;
+  line-height: 1.3;
+  padding: 0 8px;
+  color: rgb(var(--v-theme-on-surface));
+}
+</style>

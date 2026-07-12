@@ -15,6 +15,7 @@ import {
   type ZoneJob,
 } from '@/api/preheat'
 import { ApiError } from '@/api/client'
+import KioskPageHeader from '@/components/kiosk/KioskPageHeader.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -78,7 +79,7 @@ const elapsedLabel = (checkInTime: string) => {
 }
 
 const goBack = () => {
-  router.push(`/kiosk/${encodeURIComponent(workstation.value)}`)
+  router.push('/kiosk')
 }
 
 // 행 액션(대출 / ZONE 변경 / 취소)
@@ -212,20 +213,17 @@ const confirmRegister = async (zone: '1' | '2' | '3') => {
 </script>
 
 <template>
-  <div class="d-flex align-center mb-4">
-    <v-btn icon="mdi-arrow-left" size="x-large" variant="text" @click="goBack" />
-    <h1 class="text-h4 font-weight-bold ml-2">{{ workstation }} 금형예열</h1>
-    <v-spacer />
-    <v-btn color="primary" size="large" height="56" @click="openWizard">
+  <KioskPageHeader title="금형예열" :workstation="workstation" @back="goBack">
+    <v-btn color="primary" size="large" height="64" @click="openWizard">
       <v-icon start>mdi-plus-circle</v-icon>
       예열등록
     </v-btn>
-  </div>
+  </KioskPageHeader>
 
   <v-row>
     <v-col v-for="panel in ZONE_PANELS" :key="panel.key" cols="12" md="6">
       <v-card variant="tonal" :color="panel.key === '0' ? 'success' : 'primary'" class="pa-3">
-        <div class="text-h6 font-weight-bold mb-2">{{ panel.title }} ({{ board[panel.key].length }}건)</div>
+        <div class="text-h5 font-weight-bold mb-2">{{ panel.title }} ({{ board[panel.key].length }}건)</div>
         <v-card
           v-for="job in board[panel.key]"
           :key="job.name"
@@ -233,15 +231,15 @@ const confirmRegister = async (zone: '1' | '2' | '3') => {
           @click="openAction(job, panel.key)"
         >
           <div class="d-flex justify-space-between">
-            <span class="text-h6 font-weight-bold">{{ job.mold_number }}</span>
+            <span class="text-h5 font-weight-bold">{{ job.mold_number }}</span>
           </div>
-          <div class="text-body-2 text-medium-emphasis">
+          <div class="text-body-1 text-medium-emphasis">
             {{ job.material }} · {{ job.weight }}kg · {{ job.customer_name }}
           </div>
           <div class="text-caption text-medium-emphasis">{{ job.work_order }}</div>
-          <div class="d-flex justify-space-between mt-2">
-            <span class="text-body-2">입고 {{ checkInLabel(job.check_in_time) }}</span>
-            <span class="text-h6 font-weight-bold">예열 {{ elapsedLabel(job.check_in_time) }}</span>
+          <div class="d-flex justify-space-between align-center mt-2">
+            <span class="text-body-1">입고 {{ checkInLabel(job.check_in_time) }}</span>
+            <span class="digital-readout">예열 {{ elapsedLabel(job.check_in_time) }}</span>
           </div>
         </v-card>
         <div v-if="board[panel.key].length === 0" class="text-center text-medium-emphasis pa-4">비어 있음</div>
@@ -384,3 +382,16 @@ const confirmRegister = async (zone: '1' | '2' | '3') => {
     {{ snackbarText }}
   </v-snackbar>
 </template>
+
+<style scoped>
+.digital-readout {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.15rem;
+  background: rgb(var(--v-theme-background));
+  color: rgb(var(--v-theme-warning));
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+</style>

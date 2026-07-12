@@ -11,6 +11,7 @@ import {
   type PalletInput,
 } from '@/api/cutting'
 import { ApiError } from '@/api/client'
+import KioskPageHeader from '@/components/kiosk/KioskPageHeader.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -46,7 +47,7 @@ onMounted(async () => {
 })
 
 const goBack = () => {
-  router.push(`/kiosk/${encodeURIComponent(workstation.value)}`)
+  router.push('/kiosk')
 }
 
 const emptyPallet = (): PalletInput => ({ pallet_no: '', cut_length: null, cut_qty: null, sample_length: null, sample_weight: null })
@@ -121,17 +122,14 @@ const openDrawing = async () => {
 </script>
 
 <template>
-  <div class="d-flex align-center mb-3 flex-wrap ga-4">
-    <v-btn icon="mdi-arrow-left" size="x-large" variant="text" @click="goBack" />
-    <h1 class="text-h4 font-weight-bold">{{ workstation }} 절단작업</h1>
-    <v-spacer />
+  <KioskPageHeader title="절단작업" :workstation="workstation" @back="goBack">
     <div class="text-body-1">생산일자 {{ today }}</div>
     <v-radio-group v-model="shift" inline hide-details :disabled="started">
       <v-radio color="primary" label="주간" value="주간" />
       <v-radio color="primary" label="야간" value="야간" />
     </v-radio-group>
-    <v-btn variant="outlined" :disabled="!selectedRow" @click="openDrawing">도면보기</v-btn>
-  </div>
+    <v-btn variant="outlined" size="large" height="64" :disabled="!selectedRow" @click="openDrawing">도면보기</v-btn>
+  </KioskPageHeader>
 
   <v-row dense>
     <v-col cols="12" md="5">
@@ -146,7 +144,9 @@ const openDrawing = async () => {
       >
         <div class="d-flex justify-space-between align-center">
           <span class="text-body-1 font-weight-bold">{{ row.work_order }}</span>
-          <v-chip v-if="row.cutting_status" color="warning" size="x-small">{{ row.cutting_status }}</v-chip>
+          <v-chip v-if="row.cutting_status" color="warning" size="small" variant="flat" class="font-weight-bold">
+            {{ row.cutting_status }}
+          </v-chip>
         </div>
         <div class="text-caption text-medium-emphasis">
           {{ row.mold_model }} · {{ row.customer_name || '-' }} · 규격 {{ row.spec || '-' }} · 색상
@@ -168,7 +168,7 @@ const openDrawing = async () => {
             v-if="!started"
             color="primary"
             size="large"
-            height="48"
+            height="64"
             :loading="busy"
             @click="doStart"
           >
@@ -250,7 +250,7 @@ const openDrawing = async () => {
             v-if="!readyToRegister"
             block
             size="large"
-            height="48"
+            height="64"
             color="success"
             class="mt-2"
             @click="markComplete"
@@ -261,7 +261,7 @@ const openDrawing = async () => {
             v-else
             block
             size="large"
-            height="48"
+            height="64"
             color="primary"
             class="mt-2"
             :loading="busy"

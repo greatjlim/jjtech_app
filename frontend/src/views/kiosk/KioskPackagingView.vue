@@ -10,6 +10,7 @@ import {
   type PackagingQueueItem,
 } from '@/api/packaging'
 import { ApiError } from '@/api/client'
+import KioskPageHeader from '@/components/kiosk/KioskPageHeader.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -130,10 +131,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="d-flex align-center mb-3 flex-wrap ga-4">
-    <v-btn icon="mdi-arrow-left" size="x-large" variant="text" @click="goBack" />
-    <h1 class="text-h4 font-weight-bold">{{ workstation }} 포장등록</h1>
-    <v-spacer />
+  <KioskPageHeader title="포장등록" :workstation="workstation" @back="goBack">
     <div class="text-body-1">포장일자 {{ today }}</div>
     <v-radio-group v-model="shift" inline hide-details>
       <v-radio color="primary" label="주간" value="주간" />
@@ -148,11 +146,11 @@ onMounted(async () => {
       hide-details
       style="max-width: 140px"
     />
-  </div>
+  </KioskPageHeader>
 
-  <v-tabs v-model="tab" class="mb-2">
-    <v-tab value="대기">포장대기</v-tab>
-    <v-tab value="완료">포장완료</v-tab>
+  <v-tabs v-model="tab" class="mb-3" color="primary" height="56">
+    <v-tab value="대기" size="x-large" class="text-h6">포장대기</v-tab>
+    <v-tab value="완료" size="x-large" class="text-h6">포장완료</v-tab>
   </v-tabs>
 
   <div v-if="tab === '대기'">
@@ -220,7 +218,7 @@ onMounted(async () => {
             />
           </div>
 
-          <v-btn block size="large" height="56" color="primary" class="mt-2" :loading="busy" :disabled="!packQty" @click="doRegister">
+          <v-btn block size="large" height="64" color="primary" class="mt-2" :loading="busy" :disabled="!packQty" @click="doRegister">
             생산포장
           </v-btn>
         </v-card>

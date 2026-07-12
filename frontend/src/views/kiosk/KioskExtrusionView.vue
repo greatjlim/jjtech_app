@@ -13,6 +13,7 @@ import {
   type ExtrusionRecipe,
 } from '@/api/extrusion'
 import { ApiError } from '@/api/client'
+import KioskPageHeader from '@/components/kiosk/KioskPageHeader.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -114,10 +115,7 @@ const doComplete = async () => {
 </script>
 
 <template>
-  <div class="d-flex align-center mb-4 flex-wrap ga-4">
-    <v-btn icon="mdi-arrow-left" size="x-large" variant="text" @click="goBack" />
-    <h1 class="text-h4 font-weight-bold">{{ workstation }} 압출작업</h1>
-    <v-spacer />
+  <KioskPageHeader title="압출작업" :workstation="workstation" @back="goBack">
     <div class="text-body-1">작업일자 {{ today }}</div>
     <v-radio-group v-model="shift" inline hide-details :disabled="inProgress">
       <v-radio color="primary" label="주간" value="주간" />
@@ -126,7 +124,7 @@ const doComplete = async () => {
     <div class="text-h6">
       금형번호 <strong>{{ recipe?.mold_number }}</strong> · 홀수 {{ recipe?.hole_count }} · 단중 {{ recipe?.unit_weight }}
     </div>
-  </div>
+  </KioskPageHeader>
 
   <v-row dense>
     <v-col cols="12" md="3">
@@ -163,7 +161,7 @@ const doComplete = async () => {
                 v-if="!inProgress && selectedRow.extrusion_status !== '완료'"
                 block
                 size="large"
-                height="48"
+                height="64"
                 color="primary"
                 :loading="busy"
                 @click="doStart"
@@ -174,7 +172,7 @@ const doComplete = async () => {
                 v-else-if="inProgress"
                 block
                 size="large"
-                height="48"
+                height="64"
                 color="success"
                 :loading="busy"
                 @click="doComplete"
@@ -238,7 +236,9 @@ const doComplete = async () => {
           <span class="text-body-1 font-weight-bold">{{ row.name }}</span>
           <v-chip
             :color="row.extrusion_status === '완료' ? 'success' : row.extrusion_status === '진행중' ? 'warning' : undefined"
-            size="x-small"
+            size="small"
+            variant="flat"
+            class="font-weight-bold"
           >
             {{ row.extrusion_status || '지시' }}
           </v-chip>
