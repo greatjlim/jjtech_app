@@ -1,7 +1,11 @@
 # Copyright (c) 2026, JJtech and contributors
 # For license information, please see license.txt
 
+import re
+
 import frappe
+
+_HANGUL_RE = re.compile(r"[가-힣]")
 
 
 @frappe.whitelist(allow_guest=False)
@@ -37,3 +41,35 @@ def patch_gemini_model(*args, **kwargs):
 	except Exception:
 		return
 	_changai_clients.MODEL_ID = "gemini-2.5-flash"
+
+
+def patch_korean_erp_classifier(*args, **kwargs):
+	# changai의 guardrail_router(질문이 ERP 질문인지 판단하는 단계)는
+	# is_erp_query()가 질문을 토큰 단위로 쪼개서 영어 전용 키워드 사전
+	# (business_keywords_v1.json, 27,901개 전부 영어)과 글자 단위로
+	# fuzz.ratio 매칭한다. 한글 토큰은 이 사전과 절대 겹치지 않고, 게다가
+	# len(word) <= 2인 토큰은 통째로 건너뛰어서("재고","품목" 같은 2글자
+	# 한글 단어) 키워드를 추가해도 소용없다. 그 결과 한글 질문은 전부
+	# "ERP 아님"으로 분류돼 실제 SQL 파이프라인을 안 타고 정적 인사말만
+	# 돌아온다(사용자가 "결국 Gemini 키 문제 아니냐"고 오해했던 원인).
+	#
+	# 키워드를 계속 추가하는 대신, 질문에 한글이 하나라도 포함되면 그냥
+	# ERP 질문으로 판단하도록 is_erp_query 자체를 감싼다 — JJtech 사용자가
+	# 한글로 ERP 아닌 잡담을 걸러야 할 이유가 없으므로 충분히 안전한 가정이다.
+	try:
+		from changai.changai.api.v2 import text2sql_pipeline_v2 as _pipeline
+	except Exception:
+		return
+
+	if getattr(_pipeline.is_erp_query, "_jjtech_patched", False):
+		return
+
+	_original_is_erp_query = _pipeline.is_erp_query
+
+	def _is_erp_query_with_korean(master_match, q, words_list, cut_off_perc):
+		if not master_match and isinstance(q, str) and _HANGUL_RE.search(q):
+			return True
+		return _original_is_erp_query(master_match, q, words_list, cut_off_perc)
+
+	_is_erp_query_with_korean._jjtech_patched = True
+	_pipeline.is_erp_query = _is_erp_query_with_korean

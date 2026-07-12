@@ -194,7 +194,14 @@ fixtures = [
 # (라운드로빈으로 채팅 요청이 미패치 워커에 갈 수 있음). 모든 요청마다 도는
 # before_request로 옮겨서 어느 워커가 처리하든 확실히 패치되게 한다 (idempotent
 # 하고 비용도 무시할 수준).
-before_request = ["jjtech_app.jjtech_app.changai_overrides.patch_gemini_model"]
+#
+# patch_korean_erp_classifier: changai의 ERP 질문 분류기가 영어 전용
+# 키워드 사전을 쓰는 탓에 한글 질문을 전부 "ERP 아님"으로 오분류하는 문제를
+# 우회한다 (자세한 사유는 changai_overrides.py 주석 참고).
+before_request = [
+	"jjtech_app.jjtech_app.changai_overrides.patch_gemini_model",
+	"jjtech_app.jjtech_app.changai_overrides.patch_korean_erp_classifier",
+]
 
 # Scheduled Tasks
 # ---------------
