@@ -115,9 +115,10 @@ def get_sales_order_progress(search=None, limit=50):
 
 	so_item_names = [r.sales_order_item for r in rows]
 
+	# 작업지시 배정수량 — Work Order.sales_order_item으로 직접 묶는다(reqd 강제됨, Part B).
 	assigned_rows = frappe.db.sql(
 		"""
-		select sales_order_item, sum(qty - process_loss_qty) as assigned_qty
+		select sales_order_item, sum(qty - process_loss_qty) as qty
 		from `tabWork Order`
 		where docstatus = 1 and status != 'Closed' and sales_order_item in %(names)s
 		group by sales_order_item
@@ -125,11 +126,54 @@ def get_sales_order_progress(search=None, limit=50):
 		{"names": so_item_names},
 		as_dict=True,
 	)
-	assigned_map = {r.sales_order_item: flt(r.assigned_qty) for r in assigned_rows}
+	assigned_map = {r.sales_order_item: flt(r.qty) for r in assigned_rows}
+
+	# 압출·절단·포장은 sales_order_item을 직접 갖고 있지 않으므로 work_order를 거쳐 묶는다
+	# (별도 필드로 복제하지 않고 그때그때 join — 이유는 Context 참고).
+	extruded_rows = frappe.db.sql(
+		"""
+		select wo.sales_order_item,
+			sum(coalesce(ej.cut_qty_1,0)+coalesce(ej.cut_qty_2,0)+coalesce(ej.cut_qty_3,0)
+				+coalesce(ej.cut_qty_4,0)+coalesce(ej.cut_qty_5,0)) as qty
+		from `tabExtrusion Job` ej
+		inner join `tabWork Order` wo on wo.name = ej.work_order
+		where ej.status = '완료' and wo.sales_order_item in %(names)s
+		group by wo.sales_order_item
+		""",
+		{"names": so_item_names},
+		as_dict=True,
+	)
+	extruded_map = {r.sales_order_item: flt(r.qty) for r in extruded_rows}
+
+	cut_rows = frappe.db.sql(
+		"""
+		select wo.sales_order_item, sum(cl.cut_qty) as qty
+		from `tabCutting Lot` cl
+		inner join `tabWork Order` wo on wo.name = cl.work_order
+		where cl.status != '폐기' and wo.sales_order_item in %(names)s
+		group by wo.sales_order_item
+		""",
+		{"names": so_item_names},
+		as_dict=True,
+	)
+	cut_map = {r.sales_order_item: flt(r.qty) for r in cut_rows}
+
+	packed_rows = frappe.db.sql(
+		"""
+		select wo.sales_order_item, sum(coalesce(pk.pack_qty,0)+coalesce(pk.bad_qty,0)) as qty
+		from `tabPackaging` pk
+		inner join `tabWork Order` wo on wo.name = pk.work_order
+		where wo.sales_order_item in %(names)s
+		group by wo.sales_order_item
+		""",
+		{"names": so_item_names},
+		as_dict=True,
+	)
+	packed_map = {r.sales_order_item: flt(r.qty) for r in packed_rows}
 
 	shipped_rows = frappe.db.sql(
 		"""
-		select shi.sales_order_item, sum(shi.ship_qty) as shipped_qty
+		select shi.sales_order_item, sum(shi.ship_qty) as qty
 		from `tabShipment Item` shi
 		inner join `tabShipment` sh on sh.name = shi.parent
 		where sh.docstatus = 1 and shi.sales_order_item in %(names)s
@@ -138,16 +182,23 @@ def get_sales_order_progress(search=None, limit=50):
 		{"names": so_item_names},
 		as_dict=True,
 	)
-	shipped_map = {r.sales_order_item: flt(r.shipped_qty) for r in shipped_rows}
+	shipped_map = {r.sales_order_item: flt(r.qty) for r in shipped_rows}
 
 	result = []
 	for row in rows:
+		key = row.sales_order_item
 		ordered = flt(row.ordered_qty)
-		assigned = min(assigned_map.get(row.sales_order_item, 0), ordered)
-		shipped = min(shipped_map.get(row.sales_order_item, 0), assigned)
-		row["assigned_qty"] = assigned
-		row["shipped_qty"] = shipped
+		assigned = min(assigned_map.get(key, 0), ordered)
+		extruded = min(extruded_map.get(key, 0), assigned)
+		cut = min(cut_map.get(key, 0), extruded)
+		packed = min(packed_map.get(key, 0), cut)
+		shipped = min(shipped_map.get(key, 0), packed)
+
 		row["unassigned_qty"] = ordered - assigned
-		row["in_production_qty"] = assigned - shipped
+		row["extruding_qty"] = assigned - extruded
+		row["cutting_qty"] = extruded - cut
+		row["packaging_qty"] = cut - packed
+		row["shipping_qty"] = packed - shipped
+		row["shipped_qty"] = shipped
 		result.append(row)
 	return result

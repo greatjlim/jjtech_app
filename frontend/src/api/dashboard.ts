@@ -44,10 +44,12 @@ export interface SalesOrderProgressRow {
   ordered_qty: number
   customer_name: string
   transaction_date: string
-  assigned_qty: number
-  shipped_qty: number
   unassigned_qty: number
-  in_production_qty: number
+  extruding_qty: number
+  cutting_qty: number
+  packaging_qty: number
+  shipping_qty: number
+  shipped_qty: number
 }
 
 export async function getSalesOrderProgress(search?: string, limit = 50): Promise<SalesOrderProgressRow[]> {

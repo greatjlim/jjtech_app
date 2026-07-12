@@ -10,6 +10,7 @@ class CuttingLot(Document):
 	def validate(self):
 		self.validate_work_order()
 		self.validate_extrusion_job()
+		self.validate_not_over_extruded()
 		self.calculate_cut_weight()
 
 	def validate_work_order(self):
@@ -27,6 +28,25 @@ class CuttingLot(Document):
 			frappe.throw(_("압출작업 {0}은(는) 이 작업지시의 기록이 아닙니다.").format(self.extrusion_job))
 		if job.status != "완료":
 			frappe.throw(_("압출작업 {0}이(가) 아직 완료되지 않았습니다.").format(self.extrusion_job))
+
+	def validate_not_over_extruded(self):
+		job = frappe.get_doc("Extrusion Job", self.extrusion_job)
+		extruded_qty = sum(job.get(f"cut_qty_{i}") or 0 for i in range(1, 6))
+		cut_so_far = (
+			frappe.db.sql(
+				"""select sum(cut_qty) from `tabCutting Lot`
+				where extrusion_job=%s and name!=%s and status != '폐기'""",
+				(self.extrusion_job, self.name or ""),
+			)[0][0]
+			or 0
+		)
+		total = cut_so_far + (self.cut_qty or 0)
+		if total > extruded_qty:
+			frappe.throw(
+				_("절단수량 합계({0})가 압출작업의 생산수량({1})을 초과합니다(이미 절단됨 {2}).").format(
+					total, extruded_qty, cut_so_far
+				)
+			)
 
 	def calculate_cut_weight(self):
 		mold = frappe.db.get_value("Extrusion Job", self.extrusion_job, "mold")
